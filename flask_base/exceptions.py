@@ -9,6 +9,8 @@ class ClientError(Exception):
         self.payload = payload
 
     def to_dict(self):
+        if isinstance(self.message, dict):
+            return self.message
         rv = dict(self.payload or ())
         rv['message'] = self.message
         return rv
