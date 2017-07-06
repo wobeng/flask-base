@@ -1,8 +1,8 @@
 from flask import request
-from flask.views import MethodView
 
 import flask_base.exceptions as excepts
 import flask_base.req_data as req_data
+from flask_base.base import Base
 from flask_base.helper import function_args, http_path, find_schemas
 
 
@@ -70,7 +70,7 @@ def generate_schema(view_func):
     return wrapper
 
 
-class SchemaView(MethodView):
+class SchemaView(Base):
     @classmethod
     def as_view(cls, name, *class_args, **class_kwargs):
         super_cls = super(SchemaView, cls)

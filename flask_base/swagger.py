@@ -4,8 +4,8 @@ import simplejson
 import yaml
 from apispec import APISpec
 from flask import request
-from flask.views import MethodView
 
+from flask_base.base import Base
 from flask_base.helper import function_args, http_path, find_schemas
 from flask_base.schema import SchemaView
 
@@ -87,7 +87,7 @@ def generate_swagger(view_func):
     return output
 
 
-class SwaggerView(MethodView):
+class SwaggerView(Base):
     @classmethod
     def as_view(cls, name, *class_args, **class_kwargs):
         super_cls = super(SwaggerView, cls)

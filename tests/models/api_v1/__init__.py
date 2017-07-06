@@ -13,5 +13,3 @@ class Base(Schema):
 
     class ViewArg(Schema):
         path2 = fields.String()
-
-
