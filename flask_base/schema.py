@@ -56,7 +56,7 @@ def generate_schema(view_func):
             # validate schemas
             data = getattr(req_data, 'request_' + arg)(view_func_args[arg]['type'] == 'list')
             schemas = find_schemas(arg, view_func)
-            responses[arg] = validate_schemas(arg, data, schemas)
+            responses[arg] = validate_schemas(arg, data, schemas) or None
 
         # pass validated url variable overriding non http_path
         view_arg = responses.pop('view_arg', None)
