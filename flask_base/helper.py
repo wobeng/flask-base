@@ -35,12 +35,12 @@ def find_schemas(path, view_func):
     schema_req_cls = request.method.title()
     schemas = []
     try:
-        # build schemas for parent arg and child arg, skip parent arg if it don't exist
-        try:
-            schemas.append(getattr(schema, path))
-        except AttributeError:
-            pass
+        schemas.append(getattr(schema, path))
+    except AttributeError:
+        pass
+    try:
         schemas.append(getattr(getattr(schema, schema_req_cls), path))
     except AttributeError:
-        raise excepts.Schema('{} schema class is missing from {}'.format(schema_req_cls, schema.__name__))
+        if not schemas:
+            raise excepts.Schema('{} schema class is missing from {}'.format(schema_req_cls, schema.__name__))
     return schemas
