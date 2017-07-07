@@ -16,33 +16,29 @@ class ClientError(Exception):
         return rv
 
 
-class VidaException(ClientError):
+class Schema(ClientError):
     pass
 
 
-class Schema(VidaException):
+class Header(Schema):
     pass
 
 
-class Header(VidaException):
+class Path(Schema):
     pass
 
 
-class Path(VidaException):
+class Query(Schema):
     pass
 
 
-class Query(VidaException):
+class Cookie(Schema):
     pass
 
 
-class Cookie(VidaException):
+class ViewArg(Schema):
     pass
 
 
-class ViewArg(VidaException):
-    pass
-
-
-class Body(VidaException):
+class Body(Schema):
     pass
