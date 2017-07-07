@@ -1,3 +1,7 @@
+import simplejson
+from flask import make_response
+
+
 class ClientError(Exception):
     status_code = 400
 
@@ -14,6 +18,13 @@ class ClientError(Exception):
         rv = dict(self.payload or ())
         rv['message'] = self.message
         return rv
+
+    @staticmethod
+    def jsonify(data):
+        data = simplejson.dumps(data)
+        response = make_response(data)
+        response.headers['Content-Type'] = 'application/json'
+        return response
 
 
 class Schema(ClientError):
