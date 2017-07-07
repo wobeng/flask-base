@@ -21,7 +21,7 @@ class ClientError(Exception):
 
     @staticmethod
     def jsonify(data):
-        data = simplejson.dumps(data)
+        data = simplejson.dumps(data, indent=3)
         response = make_response(data)
         response.headers['Content-Type'] = 'application/json'
         return response
