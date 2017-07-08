@@ -5,9 +5,7 @@ import yaml
 from apispec import APISpec
 from flask import request
 
-from flask_base.base import Base
 from flask_base.helper import function_args, http_path, find_schemas
-from flask_base.schema import SchemaView
 
 
 def generate_swagger(view_func):
@@ -84,34 +82,4 @@ def generate_swagger(view_func):
     output.append(yaml.safe_dump({'parameters': parameters}, allow_unicode=True, default_flow_style=False))
     if definitions:
         output.append(yaml.safe_dump({'definitions': definitions}, allow_unicode=True, default_flow_style=False))
-    return output
-
-
-class SwaggerView(Base):
-    @classmethod
-    def as_view(cls, name, *class_args, **class_kwargs):
-        super_cls = super(SwaggerView, cls)
-        view_func = super_cls.as_view(name, *class_args, **class_kwargs)
-        view_func.view_class = super_cls
-        swagger_output = generate_swagger(view_func)
-
-        view_func.__name__ = name
-        view_func.__doc__ = '\n'.join(swagger_output)
-        view_func.__module__ = super_cls.__module__
-        view_func.methods = super_cls.methods
-        return view_func
-
-
-class SchemaSwaggerView(SchemaView):
-    @classmethod
-    def as_view(cls, name, *class_args, **class_kwargs):
-        super_cls = super(SchemaView, cls)
-        view_func = super_cls.as_view(name, *class_args, **class_kwargs)
-        view_func.view_class = super_cls
-        swagger_output = generate_swagger(view_func)
-
-        view_func.__name__ = name
-        view_func.__doc__ = '\n'.join(swagger_output)
-        view_func.__module__ = super_cls.__module__
-        view_func.methods = super_cls.methods
-        return view_func
+    return '\n'.join(output)
