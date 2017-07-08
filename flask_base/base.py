@@ -19,8 +19,8 @@ class Base(MethodView):
 
     @classmethod
     def as_view(cls, name, *class_args, **class_kwargs):
-
-        view_func = super(Base, cls).as_view(name, *class_args, **class_kwargs)
+        _cls = cls.swagger(cls) if cls.swagger else cls
+        view_func = super(Base, _cls).as_view(name, *class_args, **class_kwargs)
 
         for decorator in [cls.schema]:
             if decorator:

@@ -4,32 +4,32 @@ from tests.models.api_v1 import Base, Schema, fields
 class CaseTestSchema(Base):
     class Get:
         class Body(Schema):
-            body_id = fields.String()
+            get_body_id = fields.String()
 
         class Query(Schema):
-            query_id = fields.String()
+            get_query_id = fields.String()
 
         class Header(Schema):
-            header_id = fields.String()
+            get_header_id = fields.String()
 
         class Cookie(Schema):
-            cookie_id = fields.String()
+            get_cookie_id = fields.String()
 
         class ViewArg(Schema):
-            path1 = fields.String()
+            get_path1 = fields.String()
 
     class Post:
         class Body(Schema):
-            body_id = fields.String()
+            post_body_id = fields.String()
 
         class Query(Schema):
-            query_id = fields.String()
+            post_query_id = fields.String()
 
         class Header(Schema):
-            header_id = fields.String()
+            post_header_id = fields.String()
 
         class Cookie(Schema):
-            cookie_id = fields.String()
+            post_cookie_id = fields.String()
 
         class ViewArg(Schema):
-            path1 = fields.String()
+            post_path1 = fields.String()

@@ -1,11 +1,10 @@
 import inspect
 from collections import OrderedDict
 
-from flask import request
-
 import flask_base.exceptions as excepts
 
 http_path = ['path', 'body', 'query', 'header', 'cookie', 'view_arg']
+http_methods = ['get', 'head', 'post', 'put', 'delete', 'connect', 'options', 'trace', 'patch']
 
 
 def function_args(func):
@@ -29,18 +28,16 @@ def function_args(func):
     return response
 
 
-def find_schemas(path, view_func):
+def find_schemas(method, path, schema):
     path = path.title().replace('_', '')
-    schema = view_func.view_class.__schema__
-    schema_req_cls = request.method.title()
     schemas = []
     try:
         schemas.append(getattr(schema, path))
     except AttributeError:
         pass
     try:
-        schemas.append(getattr(getattr(schema, schema_req_cls), path))
+        schemas.append(getattr(getattr(schema, method), path))
     except AttributeError:
         if not schemas:
-            raise excepts.Schema('{} schema class is missing from {}'.format(schema_req_cls, schema.__name__))
+            raise excepts.Schema('{} schema class is missing from {}'.format(method, schema.__name__))
     return schemas
