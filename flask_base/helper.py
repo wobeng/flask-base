@@ -1,8 +1,6 @@
 import inspect
 from collections import OrderedDict
 
-import flask_base.exceptions as excepts
-
 http_path = ['path', 'body', 'query', 'header', 'cookie', 'view_arg']
 http_methods = ['get', 'head', 'post', 'put', 'delete', 'connect', 'options', 'trace', 'patch']
 
