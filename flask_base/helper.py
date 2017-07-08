@@ -39,5 +39,5 @@ def find_schemas(method, path, schema):
         schemas.append(getattr(getattr(schema, method), path))
     except AttributeError:
         if not schemas:
-            raise excepts.Schema('{} schema class is missing from {}'.format(method, schema.__name__))
+            raise
     return schemas
