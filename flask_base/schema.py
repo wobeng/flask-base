@@ -63,7 +63,6 @@ def validate_schema(view_func):
             responses.update(view_arg)
 
         kwargs.update(responses)
-        g.schema = responses
 
         return view_func(*args, **kwargs)
 
