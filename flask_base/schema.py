@@ -41,7 +41,7 @@ def validate_schema(view_func):
         request_method = getattr(view_func.view_class, request.method.lower())
         view_func_args = function_args(request_method)
 
-        g.requests = {}
+        g.prev_data = {}
         responses = {}
 
         for arg in view_func_args:
@@ -56,7 +56,7 @@ def validate_schema(view_func):
             # validate schemas
             data = getattr(req_data, 'request_' + arg)(view_func_args[arg]['type'] == 'list')
             schemas = find_schemas(request.method.title(), arg, view_func.view_class.__schema__)
-            g.requests[arg] = data
+            g.prev_data[arg] = data
             responses[arg] = load_schemas(arg, data, schemas) or None
 
         # pass validated url variable overriding non http_path
