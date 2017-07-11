@@ -49,6 +49,8 @@ def generate_swagger(cls):
         tags = getattr(cls, 'tags', [])
 
         view_func_args = function_args(view_func)
+
+        # add view_arg if url_rules exist in class
         if 'view_arg' not in view_func_args and hasattr(cls, 'url_rules'):
             view_func_args['view_arg'] = {'default': None, 'type': dict}
 
@@ -69,7 +71,7 @@ def generate_swagger(cls):
             elif arg in ['view_arg', 'header', 'path', 'query']:
                 for f, v in spec[class_name]['properties'].items():
                     parameter = dict(name=f, required=False)
-                    parameter['in'] = ('path' if arg == 'view_arg' else arg).title()
+                    parameter['in'] = ('path' if arg == 'view_arg' else arg)
                     parameter['type'] = v['type']
                     if 'required' in spec[class_name] and f in spec[class_name]['required']:
                         parameter['required'] = True

@@ -1,7 +1,7 @@
 from marshmallow import Schema, fields
 
 
-class Base(Schema):
+class BaseSchema(Schema):
     class Body(Schema):
         body_id2 = fields.String()
 

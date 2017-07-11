@@ -1,7 +1,7 @@
-from tests.models.api_v1 import Base, Schema, fields
+from tests.models.api_v1 import BaseSchema, Schema, fields
 
 
-class CaseTestSchema(Base):
+class CaseTestSchema(BaseSchema):
     class Get:
         class Body(Schema):
             get_body_id = fields.String()

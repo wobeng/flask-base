@@ -1,4 +1,4 @@
-from flask import request,g
+from flask import request, g
 
 import flask_base.exceptions as excepts
 import flask_base.req_data as req_data
