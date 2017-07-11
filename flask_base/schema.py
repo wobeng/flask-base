@@ -38,11 +38,12 @@ def validate_schema(view_func):
 
     def wrapper(*args, **kwargs):
         """For each incoming data given, load and validate"""
+        responses = {}
+        if not hasattr(g, 'req_data'):
+            g.req_data = {}
+
         request_method = getattr(view_func.view_class, request.method.lower())
         view_func_args = function_args(request_method)
-
-        g.req_data = {}
-        responses = {}
 
         for arg in view_func_args:
 
