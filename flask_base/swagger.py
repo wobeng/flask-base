@@ -49,7 +49,9 @@ def generate_swagger(cls):
         tags = getattr(cls, 'tags', [])
 
         view_func_args = function_args(view_func)
-        print(view_func_args)
+        if 'view_arg' not in view_func_args and hasattr(cls, 'url_rules'):
+            view_func_args['view_arg'] = {'default': None, 'type': dict}
+
         for arg, val in {arg: val for arg, val in view_func_args.items() if arg in http_path}.items():
             spec = find_specs(find_schemas(http_method.title(), arg, cls.__schema__))
             if arg in ['body']:
