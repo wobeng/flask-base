@@ -8,6 +8,6 @@ api = Blueprint('api', __name__)
 
 class Api(Base):
     tags = 'Users'
-
+    url_rules = ['host']
 
 from tests.apps.api_v1 import case
