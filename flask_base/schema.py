@@ -38,18 +38,18 @@ def validate_schema(view_func):
 
     def wrapper(*args, **kwargs):
         """For each incoming data given, load and validate"""
-        responses = {}
+        g.sch_data = {}
         if not hasattr(g, 'req_data'):
             g.req_data = {}
 
-        request_method = getattr(view_func.view_class, request.method.lower())
+        request_method =getattr(view_func.view_class, request.method.lower())
         view_func_args = function_args(request_method)
 
         for arg in view_func_args:
 
             # set non http_path to none for now
             if arg not in http_path:
-                responses[arg] = None
+                g.sch_data[arg] = None
                 continue
 
             # get data from request
@@ -58,14 +58,14 @@ def validate_schema(view_func):
             data = getattr(req_data, 'request_' + arg)(view_func_args[arg]['type'] == 'list')
             schemas = find_schemas(request.method.title(), arg, view_func.view_class.__schema__)
             g.req_data[arg] = data
-            responses[arg] = load_schemas(arg, data, schemas) or None
+            g.sch_data[arg] = load_schemas(arg, data, schemas) or None
 
         # pass validated url variable overriding non http_path
-        view_arg = responses.pop('view_arg', None)
+        view_arg = g.sch_data.pop('view_arg', None)
         if view_arg:
-            responses.update(view_arg)
+            g.sch_data.update(view_arg)
 
-        kwargs.update(responses)
+        kwargs.update(g.sch_data)
 
         return view_func(*args, **kwargs)
 
