@@ -10,12 +10,12 @@ from flask_base.helper import function_args, http_path, find_schemas, http_metho
 def generate_swagger(cls):
     def update_nested(d, u):
         """Update nested dictionary"""
-        for k, v in u.items():
-            if isinstance(v, Mapping):
-                r = update_nested(d.get(k, {}), v)
-                d[k] = r
+        for key, value in u.items():
+            if isinstance(value, Mapping):
+                r = update_nested(d.get(key, {}), value)
+                d[key] = r
             else:
-                d[k] = u[k]
+                d[key] = u[key]
         return d
 
     def generate_spec(schema):
@@ -50,12 +50,15 @@ def generate_swagger(cls):
 
         view_func_args = function_args(view_func)
 
-        # add view_arg if url_rules exist in class
-        if 'view_arg' not in view_func_args and hasattr(cls, 'url_rules'):
-            view_func_args['view_arg'] = {'default': None, 'type': dict}
+        # add global arg if global args exist in class
+        if hasattr(cls, 'global_args'):
+            for arg in cls.global_args:
+                if arg not in view_func_args:
+                    view_func_args[arg] = cls.global_args[arg]
+                    view_func_args[arg]['scope'] = 'global'
 
         for arg, val in {arg: val for arg, val in view_func_args.items() if arg in http_path}.items():
-            spec = find_specs(find_schemas(http_method.title(), arg, cls.__schema__))
+            spec = find_specs(find_schemas(http_method.title(), arg, cls.schema))
             if arg in ['body']:
                 parameter = {
                     'name': arg,
@@ -68,7 +71,7 @@ def generate_swagger(cls):
                     parameter['required'] = True
                 parameters.append(parameter)
                 definitions.update(spec)
-            elif arg in ['view_arg', 'header', 'path', 'query']:
+            elif arg in ['view_arg', 'header', 'query']:
                 for f, v in spec[class_name]['properties'].items():
                     parameter = dict(name=f, required=False)
                     parameter['in'] = ('path' if arg == 'view_arg' else arg)

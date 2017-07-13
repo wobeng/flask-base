@@ -1,7 +1,7 @@
 import inspect
 from collections import OrderedDict
 
-http_path = ['path', 'body', 'query', 'header', 'cookie', 'view_arg']
+http_path = ['path', 'body', 'query', 'header', 'view_arg']
 http_methods = ['get', 'head', 'post', 'put', 'delete', 'connect', 'options', 'trace', 'patch']
 
 
@@ -20,7 +20,7 @@ def function_args(func):
             typ = v.split(':')[1].split('=')[0]
         except IndexError:
             typ = None
-        response[k] = {'default': default, 'type': typ}
+        response[k] = {'default': default, 'type': typ, 'scope': 'local'}
     if any([arg for arg in response.keys() if arg not in http_path and arg != 'self']):
         response['view_arg'] = {'default': None, 'type': dict}
     return response

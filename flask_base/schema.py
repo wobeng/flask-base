@@ -42,9 +42,8 @@ def validate_schema(view_func):
         if not hasattr(g, 'req_data'):
             g.req_data = {}
 
-        request_method =getattr(view_func.view_class, request.method.lower())
+        request_method = getattr(view_func.view_class, request.method.lower())
         view_func_args = function_args(request_method)
-
         for arg in view_func_args:
 
             # set non http_path to none for now
@@ -56,9 +55,9 @@ def validate_schema(view_func):
             # find schemas for request
             # validate schemas
             data = getattr(req_data, 'request_' + arg)(view_func_args[arg]['type'] == 'list')
-            schemas = find_schemas(request.method.title(), arg, view_func.view_class.__schema__)
+            schemas = find_schemas(request.method.title(), arg, view_func.view_class.schema)
             g.req_data[arg] = data
-            g.sch_data[arg] = load_schemas(arg, data, schemas) or None
+            g.sch_data[arg] = load_schemas(arg, data, schemas)
 
         # pass validated url variable overriding non http_path
         view_arg = g.sch_data.pop('view_arg', None)

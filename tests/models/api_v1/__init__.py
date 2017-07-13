@@ -3,7 +3,7 @@ from marshmallow import Schema, fields
 
 class BaseSchema(Schema):
     class Body(Schema):
-        body_id2 = fields.String()
+        body_id2 = fields.Integer()
 
     class Query(Schema):
         query_id2 = fields.String()

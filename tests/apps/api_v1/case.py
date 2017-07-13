@@ -5,13 +5,13 @@ from tests.models.api_v1.case import CaseTestSchema
 
 
 class CaseTest(Api):
-    __schema__ = CaseTestSchema
+    schema = CaseTestSchema
 
-    def get(self, body, query, header, cookie, path1, path2):
-        return jsonify(body, query, header, cookie, path1, path2)
+    def get(self, body, query, path1, path2):
+        return jsonify(body, query, path1, path2)
 
-    def post(self, body: list, query: list, header: list, cookie: list, path1, path2):
-        return jsonify(body, query, header, cookie, path1, path2)
+    def post(self, body: list, query: list, path1, path2):
+        return jsonify(body, query, path1, path2)
 
 
 class CasePat2(Api):

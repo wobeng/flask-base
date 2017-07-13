@@ -42,11 +42,6 @@ class Path(Schema):
 class Query(Schema):
     pass
 
-
-class Cookie(Schema):
-    pass
-
-
 class ViewArg(Schema):
     pass
 

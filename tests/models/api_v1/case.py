@@ -12,11 +12,8 @@ class CaseTestSchema(BaseSchema):
         class Header(Schema):
             get_header_id = fields.String()
 
-        class Cookie(Schema):
-            get_cookie_id = fields.String()
-
         class ViewArg(Schema):
-            get_path1 = fields.String()
+            path1 = fields.String()
 
     class Post:
         class Body(Schema):
@@ -28,8 +25,5 @@ class CaseTestSchema(BaseSchema):
         class Header(Schema):
             post_header_id = fields.String()
 
-        class Cookie(Schema):
-            post_cookie_id = fields.String()
-
         class ViewArg(Schema):
-            post_path1 = fields.String()
+            path1 = fields.String()

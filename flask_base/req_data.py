@@ -42,11 +42,6 @@ def request_body(many=False):
     return single_or_many(body, many)
 
 
-def request_cookie(many=False):
-    cookies = dict(request.cookies)
-    return single_or_many(cookies, many)
-
-
 def request_query(many=False):
     args = multi_dict_marsh(request.args, many)
     return single_or_many(args, many)
@@ -61,5 +56,5 @@ def request_header(many=False):
 
 
 def request_view_arg(many=False):
-    cookies = dict(request.view_args)
-    return single_or_many(cookies, many)
+    args = dict(request.view_args)
+    return single_or_many(args, many)
