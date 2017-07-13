@@ -42,6 +42,7 @@ class Path(Schema):
 class Query(Schema):
     pass
 
+
 class ViewArg(Schema):
     pass
 
