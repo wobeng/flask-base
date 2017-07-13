@@ -24,6 +24,8 @@ class Base(MethodView):
 
         for decorator in [cls.schema]:
             if decorator:
+                print(decorator)
+
                 view_func2 = decorator(view_func)
                 view_func2.view_class = view_func.view_class
 
