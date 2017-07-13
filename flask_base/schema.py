@@ -73,11 +73,9 @@ def validate_schema(view_func):
             g.sch_data.update(view_arg)
 
         # update function with requested data
-        print(g.sch_data)
         for arg in g.sch_data:
             if view_func_args[arg]['scope'] == 'local':
-                print(arg, view_func_args[arg])
-                kwargs.update(g.sch_data)
+                kwargs.update(g.sch_data[arg])
 
         return view_func(*args, **kwargs)
 
