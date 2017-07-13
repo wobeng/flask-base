@@ -44,6 +44,14 @@ def validate_schema(view_func):
 
         request_method = getattr(view_func.view_class, request.method.lower())
         view_func_args = function_args(request_method)
+
+        # add global arg if global args exist in class
+        if hasattr(view_func.view_class, 'global_args'):
+            for arg in view_func.view_class.global_args:
+                if arg not in view_func_args:
+                    view_func_args[arg] = view_func.view_class.global_args[arg]
+                    view_func_args[arg]['scope'] = 'global'
+
         for arg in view_func_args:
 
             # set non http_path to none for now
@@ -64,7 +72,10 @@ def validate_schema(view_func):
         if view_arg:
             g.sch_data.update(view_arg)
 
-        kwargs.update(g.sch_data)
+        # update function with requested data
+        for arg in g.sch_data:
+            if view_func_args[arg]['scope'] == 'local':
+                kwargs.update(g.sch_data)
 
         return view_func(*args, **kwargs)
 
