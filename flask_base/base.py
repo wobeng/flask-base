@@ -7,8 +7,8 @@ from flask_base.swagger import generate_swagger
 
 
 class Base(MethodView):
-    schema = validate_schema
-    swagger = generate_swagger
+    v_schema = validate_schema
+    g_swagger = generate_swagger
 
     @staticmethod
     def jsonify(data):
@@ -19,12 +19,11 @@ class Base(MethodView):
 
     @classmethod
     def as_view(cls, name, *class_args, **class_kwargs):
-        _cls = cls.swagger(cls) if cls.swagger else cls
+        _cls = cls.g_swagger(cls) if cls.g_swagger else cls
         view_func = super(Base, _cls).as_view(name, *class_args, **class_kwargs)
 
-        for decorator in [cls.schema]:
+        for decorator in [cls.v_schema]:
             if decorator:
-                print(decorator)
 
                 view_func2 = decorator(view_func)
                 view_func2.view_class = view_func.view_class
