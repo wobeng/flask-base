@@ -49,7 +49,7 @@ def request_query(many=False):
 
 def request_header(many=False):
     headers = {
-        key.lower().replace('-', '_'): val.lower().replace('-', '_')
+        key.lower().replace('-', '_'): val
         for key, val in request.headers
     }
     return single_or_many(headers, many)
