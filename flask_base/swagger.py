@@ -8,15 +8,17 @@ from flask_base.helper import function_args, http_path, find_schemas, http_metho
 
 
 def generate_swagger(cls):
-    def update_nested(d, u):
+    def update_nested(orig_dict, new_dict):
         """Update nested dictionary"""
-        for key, value in u.items():
+        for key, value in new_dict.items():
             if isinstance(value, Mapping):
-                r = update_nested(d.get(key, {}), value)
-                d[key] = r
+                tmp = update_nested(orig_dict.get(key, {}), value)
+                orig_dict[key] = tmp
+            elif isinstance(value, list):
+                orig_dict[key] = (orig_dict.get(key, []) + value)
             else:
-                d[key] = u[key]
-        return d
+                orig_dict[key] = new_dict[key]
+        return orig_dict
 
     def generate_spec(schema):
         """Generate apispec """
