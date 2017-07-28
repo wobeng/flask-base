@@ -13,7 +13,7 @@ class Base(MethodView):
     @staticmethod
     def jsonify(data):
         data = simplejson.dumps(data, indent=3)
-        response = make_response(data)
+        response = make_response({'data' : data})
         response.headers['Content-Type'] = 'application/json'
         return response
 
