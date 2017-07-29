@@ -11,7 +11,7 @@ class Base(MethodView):
     g_swagger = generate_swagger
 
     @staticmethod
-    def jsonify(data, translate_code=None):
+    def jsonify(data={}, translate_code=None):
         data = {'data': simplejson.dumps(data, indent=3)}
         if translate_code:
             data['translate_code'] = translate_code
