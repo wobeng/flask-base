@@ -11,9 +11,11 @@ class Base(MethodView):
     g_swagger = generate_swagger
 
     @staticmethod
-    def jsonify(data):
-        data = simplejson.dumps(data, indent=3)
-        response = make_response({'data' : data})
+    def jsonify(data, translate_code=None):
+        data = {'data': simplejson.dumps(data, indent=3)}
+        if translate_code:
+            data['translate_code'] = translate_code
+        response = make_response({'data': data})
         response.headers['Content-Type'] = 'application/json'
         return response
 
