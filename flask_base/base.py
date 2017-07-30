@@ -11,10 +11,10 @@ class Base(MethodView):
     g_swagger = generate_swagger
 
     @staticmethod
-    def jsonify(data=None, success_msg=None):
+    def success(data=None, msg=None):
         data = data or {}
-        if success_msg:
-            data['success_msg'] = success_msg
+        if msg:
+            data['message'] = msg
         if data:
             data = {'data': simplejson.dumps(data, indent=3)}
             status_code = 200

@@ -12,19 +12,19 @@ def validate_schema(view_func):
             return [{**d, **l2[i]} for i, d in enumerate(l1) if d or l2[i]]
         return l1 + l2
 
-    def load_schemas(path, data, schemas):
+    def load_schemas(path, data, schemas, class_name):
         """Load and validate parent and child schema"""
 
         many = type(data) == list
         schemas_data = [] if many else {}
-        schemas_errors = [] if many else {}
+        schemas_errors = {}
 
         for schema in schemas:
             schema_data, schema_errors = schema(many=many).load(data)
             if many:
                 schemas_data = merge_list_dict(schemas_data, schema_data)
                 if schema_errors:
-                    schemas_errors = merge_list_dict(schemas_errors, schema_errors)
+                    schemas_errors.update(schema_errors)
             else:
                 schemas_data.update(schema_data)
                 if schema_errors:
@@ -32,7 +32,7 @@ def validate_schema(view_func):
 
         if schemas_errors:
             expectation = getattr(excepts, path.title())
-            raise expectation(schemas_errors)
+            raise expectation(schemas_errors, class_name)
 
         return schemas_data
 
@@ -65,7 +65,7 @@ def validate_schema(view_func):
             data = getattr(req_data, 'request_' + arg)(view_func_args[arg]['type'] == 'list')
             schemas = find_schemas(request.method.title(), arg, view_func.view_class.schema)
             g.req_data[arg] = data
-            g.sch_data[arg] = load_schemas(arg, data, schemas)
+            g.sch_data[arg] = load_schemas(arg, data, schemas, view_func.view_class.__name__)
 
         # pass validated url variable overriding non http_path
         view_arg = g.sch_data.pop('view_arg', None)
