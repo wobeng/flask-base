@@ -19,7 +19,7 @@ class Error(Exception):
 
 
 class ClientError(Error):
-    def __init__(self, messages, domain=None):
+    def __init__(self, messages, status_code=400,domain=None):
         payload = []
         if isinstance(messages, str):
             messages = [messages]
@@ -31,7 +31,7 @@ class ClientError(Error):
                     'message': message
                 }
             )
-        Error.__init__(self, 'ClientErrorException', 400, payload)
+        Error.__init__(self, 'ClientErrorException', status_code, payload)
 
 
 class Schema(Error):
