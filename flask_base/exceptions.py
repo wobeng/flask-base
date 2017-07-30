@@ -37,6 +37,7 @@ class ClientError(Error):
 class Schema(Error):
     def __init__(self, errors, domain):
         payload = []
+        print(errors)
         for parent_e, parent_e_val in errors.items():
             for child_e, messages in parent_e_val.items():
                 for message in messages:
