@@ -16,7 +16,8 @@ class Base(MethodView):
         if msg:
             data['message'] = msg
         if data:
-            data = {'data': simplejson.dumps(data, indent=3)}
+            data = {'data': data}
+            data = simplejson.dumps(data, indent=3)
             status_code = 200
             if request.method == 'POST':
                 status_code = 201
