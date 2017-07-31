@@ -14,7 +14,7 @@ class Base(MethodView):
     def success(data=None, msg=None):
         data = data or {}
         if msg:
-            data['alert'] = msg
+            data['message'] = msg
         if data:
             data = {'data': {'items': data}}
             data = simplejson.dumps(data, indent=3)
