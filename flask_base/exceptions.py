@@ -26,7 +26,7 @@ class ClientError(Error):
         for message in messages:
             payload.append(
                 {
-                    'domain': domain or request.endpoint,
+                    'domain': (domain or request.endpoint).split('.')[-1],
                     'reason': message,
                     'message': message
                 }
