@@ -26,7 +26,7 @@ class ClientError(Error):
         for message in messages:
             payload.append(
                 {
-                    'domain': (domain or request.endpoint).split('.')[-1],
+                    'domain': (domain or request.endpoint).split('.')[-1].lower(),
                     'reason': message,
                     'message': message
                 }
@@ -54,7 +54,7 @@ class Schema(Error):
     def to_payload(self, location, location_id, message):
         self.payload.append(
             {
-                'domain': self.domain,
+                'domain': self.domain.lower(),
                 'locationType': self.__class__.__name__.lower(),
                 'location': location,
                 'locationId': location_id,
