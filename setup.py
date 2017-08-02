@@ -56,10 +56,13 @@ setup(
     install_requires=[
         'Flask',
         'marshmallow'
+        'simplejson',
+        'flasgger',
+        'apispec',
+        'PyYAML'
     ],
     dependency_links=[
         'git+https://git@github.com/wobeng/aws-helper.git@master',
-        'git+https://git@github.com/wobeng/py-helper.git@master',
-        'git+https://git@github.com/wobeng/flask-vida.git@master',
+        'git+https://git@github.com/wobeng/py-helper.git@master'
     ]
 )
