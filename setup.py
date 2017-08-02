@@ -55,7 +55,7 @@ setup(
     cmdclass={'install': MyInstall},
     install_requires=[
         'Flask',
-        'marshmallow'
+        'marshmallow',
         'simplejson',
         'flasgger',
         'apispec',
