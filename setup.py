@@ -45,11 +45,11 @@ class MyInstall(install):
 
 setup(
     name='flask-base',
-    description='flask helper',
+    description='flask base',
     url=_lu_meta['url'],
     author='Welby Obeng',
     license=_lu_meta['license'],
-    keywords='flask helper',
+    keywords='flask base',
     packages=find_packages(),
     version=_lu_meta['version'],
     cmdclass={'install': MyInstall},
