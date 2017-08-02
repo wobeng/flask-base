@@ -31,7 +31,7 @@ def validate_schema(view_func):
                     schemas_errors.update(schema_errors)
 
         if schemas_errors:
-            expectation = getattr(excepts, path.title())
+            expectation = getattr(excepts, path.title().replace('_', ''))
             raise expectation(schemas_errors, class_name)
 
         return schemas_data
