@@ -2,7 +2,7 @@ from flask import request, g
 
 import flask_base.exceptions as excepts
 import flask_base.req_data as req_data
-from flask_base.helper import function_args, http_path, find_schemas
+from flask_base.utils import function_args, http_path, find_schemas
 
 
 def validate_schema(view_func):

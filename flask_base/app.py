@@ -1,15 +1,12 @@
 import os
-from aws_helper.aws import Aws
+from aws_utils import client
 from flasgger import Swagger
 from flask import Flask, jsonify
 from flask_base.exceptions import Error
 from flask_cors import CORS
 
 # init aws and load config from s3 to environment if dev
-aws = Aws()
-if os.environ.get('SERVERTYPE', "DEV") == "DEV":
-    aws.load_config()
-
+aws = client()
 
 def init_api(name, **cors):
     # create an application instance.

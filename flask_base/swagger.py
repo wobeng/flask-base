@@ -4,7 +4,7 @@ import simplejson
 import yaml
 from apispec import APISpec
 
-from flask_base.helper import function_args, http_path, find_schemas, http_methods
+from flask_base.utils import function_args, http_path, find_schemas, http_methods
 
 
 def generate_swagger(cls):
