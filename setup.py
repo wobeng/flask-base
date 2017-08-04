@@ -60,5 +60,6 @@ setup(
         'flasgger',
         'apispec',
         'PyYAML'
-    ]
+    ],
+    dependency_links=['git+https://git@github.com/wobeng/aws-utils.git@master']
 )

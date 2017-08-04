@@ -4,3 +4,4 @@ simplejson
 flasgger
 apispec
 PyYAML
+git+https://git@github.com/wobeng/aws-utils.git@master
