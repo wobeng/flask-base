@@ -22,7 +22,7 @@ def generate_swagger(cls):
 
     def generate_spec(schema):
         """Generate apispec """
-        spec = APISpec(
+        api_spec = APISpec(
             title=class_name,
             version='1.0.0',
             plugins=(
@@ -30,8 +30,8 @@ def generate_swagger(cls):
                 'apispec.ext.marshmallow',
             ),
         )
-        spec.definition(class_name, schema=schema)
-        return simplejson.loads(simplejson.dumps(spec.to_dict()['definitions']))
+        api_spec.definition(class_name, schema=schema)
+        return simplejson.loads(simplejson.dumps(api_spec.to_dict()['definitions']))
 
     def find_specs(schemas):
         """Generate apispec for parent and child schema"""
