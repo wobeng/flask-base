@@ -1,3 +1,4 @@
+--process-dependency-links
 Flask
 marshmallow
 simplejson
