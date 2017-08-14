@@ -1,20 +1,22 @@
 from flask import jsonify
 
 from tests.apps.api_v1 import Api, api
-from tests.models.api_v1.case import CaseTestSchema
+from tests.models.api_v1.case import CaseTestSchema, CasePat2Schema
 
 
 class CaseTest(Api):
     schema = CaseTestSchema
 
-    def get(self, body, query: list, path1, path2):
+    def get(self, body, query, path1, path2):
         return jsonify(body, query, path1, path2)
 
-    def post(self, body: list, query: list, path1, path2):
+    def post(self, body, query, path1, path2):
         return jsonify(body, query, path1, path2)
 
 
 class CasePat2(Api):
+    schema = CasePat2Schema
+
     def get(self):
         return ''
 

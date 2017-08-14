@@ -1,16 +1,16 @@
 from flask import request
 
 
-def multi_dict_marsh(multi_dict, many=False):
-    return {key: val.split(',') if many else val for key, val in multi_dict.items()}
+def multi_dict_marsh(multi_dict):
+    return {key: val.split(',') for key, val in multi_dict.items()}
 
 
-def request_body(many=False):
-    return request.get_json(True, True) or multi_dict_marsh(request.form, many)
+def request_body():
+    return request.get_json(True, True) or multi_dict_marsh(request.form)
 
 
-def request_query(many=False):
-    return multi_dict_marsh(request.args, many)
+def request_query():
+    return multi_dict_marsh(request.args)
 
 
 def request_header():

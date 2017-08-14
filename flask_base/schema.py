@@ -6,29 +6,19 @@ from flask_base.utils import function_args, http_path, find_schemas
 
 
 def validate_schema(view_func):
-    def merge_list_dict(l1, l2):
-        """merge list of dict by index"""
-        if l1 and l2:
-            return [{**d, **l2[i]} for i, d in enumerate(l1) if d or l2[i]]
-        return l1 + l2
-
     def load_schemas(path, data, schemas, class_name):
         """Load and validate parent and child schema"""
 
-        many = type(data) == list
-        schemas_data = [] if many else {}
+        schemas_data = {}
         schemas_errors = {}
 
         for schema in schemas:
-            schema_data, schema_errors = schema(many=many).load(data)
-            if many:
-                schemas_data = merge_list_dict(schemas_data, schema_data)
-                if schema_errors:
-                    schemas_errors.update(schema_errors)
-            else:
-                schemas_data.update(schema_data)
-                if schema_errors:
-                    schemas_errors.update(schema_errors)
+
+            schema_data, schema_errors = schema().load(data)
+            schemas_data.update(schema_data)
+
+            if schema_errors:
+                schemas_errors.update(schema_errors)
 
         if schemas_errors:
             expectation = getattr(excepts, path.title().replace('_', ''))
@@ -62,10 +52,7 @@ def validate_schema(view_func):
             # get data from request
             # find schemas for request
             # validate schemas
-            try:
-                data = getattr(req_data, 'request_' + arg)(view_func_args[arg]['type'] == 'list')
-            except BaseException:
-                data = getattr(req_data, 'request_' + arg)()
+            data = getattr(req_data, 'request_' + arg)()
 
             schemas = find_schemas(request.method.title(), arg, view_func.view_class.schema)
             g.req_data[arg] = data
