@@ -62,8 +62,11 @@ def validate_schema(view_func):
             # get data from request
             # find schemas for request
             # validate schemas
-            data = getattr(req_data, 'request_' + arg)(view_func_args[arg]['type'] == 'list')
-            print(data)
+            try:
+                data = getattr(req_data, 'request_' + arg)(view_func_args[arg]['type'] == 'list')
+            except BaseException:
+                data = getattr(req_data, 'request_' + arg)()
+
             schemas = find_schemas(request.method.title(), arg, view_func.view_class.schema)
             g.req_data[arg] = data
             g.sch_data[arg] = load_schemas(arg, data, schemas, view_func.view_class.__name__)
