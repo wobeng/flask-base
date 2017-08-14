@@ -2,7 +2,7 @@ from flask import request
 
 
 def multi_dict_marsh(multi_dict):
-    return {key: val.split(',') for key, val in multi_dict.items()}
+    return {key: val.split(',') if ',' in val else val for key, val in multi_dict.items()}
 
 
 def request_body():
