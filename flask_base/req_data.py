@@ -12,6 +12,7 @@ def single_or_many(data, many=False):
 
 
 def multi_dict_marsh(multi_dict, many=False):
+    print(multi_dict,many)
     response = []
     # get max range
     try:

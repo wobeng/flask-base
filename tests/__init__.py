@@ -1,19 +1,17 @@
-from flasgger import Swagger
-from flask import Flask
+
+
+from flask import redirect
+from flask_base.app import init_api
 
 from tests.apps.api_v1 import api
 
-app = Flask(__name__)
+app = init_api(__name__)
 app.register_blueprint(api)
 
-app.config['SWAGGER'] = dict(title='', uiversion=2)
-Swagger(app, template=dict(swagger='2.0'))
 
-
-@app.route("/")
-def hello():
-    print(app.url_map)
-    return ""
+@app.route('/')
+def index():
+    return redirect('/apidocs')
 
 
 if __name__ == '__main__':

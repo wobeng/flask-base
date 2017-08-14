@@ -7,7 +7,7 @@ from tests.models.api_v1.case import CaseTestSchema
 class CaseTest(Api):
     schema = CaseTestSchema
 
-    def get(self, body, query, path1, path2):
+    def get(self, body, query: list, path1, path2):
         return jsonify(body, query, path1, path2)
 
     def post(self, body: list, query: list, path1, path2):
