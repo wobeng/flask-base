@@ -1,8 +1,6 @@
-
-
 from flask import redirect
-from flask_base.app import init_api
 
+from flask_base.app import init_api
 from tests.apps.api_v1 import api
 
 app = init_api(__name__)

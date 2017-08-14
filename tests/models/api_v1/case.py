@@ -1,5 +1,5 @@
 from marshmallow import Schema
-from py_utils.mmallow import String,List
+from py_utils.mmallow import String, List
 
 from tests.models.api_v1 import BaseSchema
 

@@ -1,14 +1,8 @@
-import os
-
-from aws_utils import client
 from flasgger import Swagger
 from flask import Flask, jsonify
 from flask_cors import CORS
 
-from flask_base.exceptions import Error
-
-# init aws and load config from s3 to environment if dev
-aws = None
+from py_utils.exceptions import Error
 
 
 def init_api(name, **cors):
@@ -17,16 +11,6 @@ def init_api(name, **cors):
 
     # init cors
     CORS(app, **cors)
-
-    try:
-        # add flask configs
-        global aws
-        aws = client()
-        for env in os.environ:
-            if env.startswith("FLASK_"):
-                app.config[env.replace("FLASK_", "")] = os.environ[env]
-    except BaseException:
-        pass
 
     # handle error
     @app.errorhandler(Error)
