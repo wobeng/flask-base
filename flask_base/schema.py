@@ -1,7 +1,7 @@
 from flask import request, g
 
 import flask_base.exceptions as excepts
-import flask_base.req_data as req_data
+from flask_base import reqdata
 from flask_base.utils import function_args, http_path, find_schemas
 
 
@@ -52,7 +52,7 @@ def validate_schema(view_func):
             # get data from request
             # find schemas for request
             # validate schemas
-            data = getattr(req_data, 'request_' + arg)()
+            data = getattr(reqdata, 'request_' + arg)()
 
             schemas = find_schemas(request.method.title(), arg, view_func.view_class.schema)
             g.req_data[arg] = data
