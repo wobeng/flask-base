@@ -2,9 +2,14 @@ from collections import Mapping
 
 import simplejson
 import yaml
-from apispec import APISpec
+from apispec.ext.marshmallow import swagger
+from py_utils import mmallow
 
 from flask_base.utils import function_args, http_path, find_schemas, http_methods
+
+# monkey patch
+swagger.FIELD_MAPPING = mmallow.FIELD_MAPPING
+from apispec import APISpec
 
 
 def generate_swagger(cls):
