@@ -2,11 +2,7 @@ from flask import request
 
 
 def multi_dict_marsh(data):
-    output = {}
-    for key, value in data.items():
-        values = value.split(',')
-        output[key] = values if len(values) > 1 else value
-    return output
+    return {key: value.split(',') for key, value in data.items()}
 
 
 def request_body():

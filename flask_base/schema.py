@@ -51,6 +51,7 @@ def validate_schema(view_func):
             # get data from request
             # find schemas for request
             # validate schemas
+
             data = getattr(reqdata, 'request_' + arg)()
             if arg == 'view_arg' and hasattr(g, 'view_args'):  # check for url processors
                 data.update(g.view_args)
