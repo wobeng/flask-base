@@ -1,4 +1,4 @@
-from flask import jsonify, g
+from flask import jsonify
 
 from tests.apps.api_v1 import Api, api
 from tests.models.api_v1.case import CaseTestSchema

@@ -1,4 +1,4 @@
-from flask import Blueprint, g, request
+from flask import Blueprint, g
 
 from flask_base.base import Base
 
@@ -13,8 +13,8 @@ def add_app_code(endpoint, values):
 
 @api.url_value_preprocessor
 def pull_app_code(endpoint, values):
-    g.app = values.pop('app')
-    request.view_args['app'] = g.app
+    g.view_args = dict()
+    g.view_args['app'] = values.pop('app')
 
 
 class Api(Base):

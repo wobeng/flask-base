@@ -5,6 +5,7 @@ from py_utils.mmallow import String, List, ContainsOnly
 class CaseTestSchema:
     class ViewArg(Schema):
         app = String(required=True, default='cd8482612f04')
+        path1 = String()
 
     class Get:
         class Body(Schema):
