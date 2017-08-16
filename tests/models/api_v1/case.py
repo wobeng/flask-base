@@ -2,15 +2,10 @@ from marshmallow import Schema
 from py_utils.mmallow import String, List, ContainsOnly
 
 
-class CasePat2Schema:
-    class Header(Schema):
-        get_header_id = String()
-
-    class ViewArg(Schema):
-        get_viewarg_id = String()
-
-
 class CaseTestSchema:
+    class ViewArg(Schema):
+        app = String(required=True, default='cd8482612f04')
+
     class Get:
         class Body(Schema):
             get_body_id = String()
