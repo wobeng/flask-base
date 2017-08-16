@@ -57,9 +57,6 @@ def validate_schema(view_func):
             schemas = find_schemas(request.method.title(), arg, view_func.view_class.schema)
             processed_data[arg] = load_schemas(arg, data, schemas, view_func.view_class.__name__)
 
-        print(processed_data)
-        print(view_func_args)
-
         # pass validated url variable overriding non http_path
         if 'view_arg' in processed_data:
             processed_data.update(processed_data.pop('view_arg'))
@@ -68,7 +65,6 @@ def validate_schema(view_func):
         for arg in processed_data:
             if arg in view_func_args and view_func_args[arg]['scope'] == 'local':
                 kwargs[arg] = processed_data[arg]
-        print(kwargs)
         return view_func(*args, **kwargs)
 
     return wrapper
