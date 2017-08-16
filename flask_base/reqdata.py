@@ -6,7 +6,6 @@ def multi_dict_marsh(data):
     for key, value in data.items():
         values = value.split(',')
         output[key] = values if len(values) > 1 else value
-
     return {key: val.split(',') for key, val in data.items()}
 
 
