@@ -7,8 +7,7 @@ from flask_base.swagger import generate_swagger
 
 
 class Base(MethodView):
-    v_schema = validate_schema
-    g_swagger = generate_swagger
+    pre_decorators = []
 
     @staticmethod
     def success(data=None, msg=None):
@@ -35,9 +34,9 @@ class Base(MethodView):
 
     @classmethod
     def as_view(cls, name, *class_args, **class_kwargs):
-        _cls = cls.g_swagger(cls) if cls.g_swagger else cls
+        _cls = generate_swagger(cls) if generate_swagger else cls
         view_func = super(Base, _cls).as_view(name, *class_args, **class_kwargs)
-        for decorator in [cls.v_schema]:
+        for decorator in cls.pre_decorators + [validate_schema]:
             if decorator:
                 view_func2 = decorator(view_func)
                 view_func2.view_class = view_func.view_class

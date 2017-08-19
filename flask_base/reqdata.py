@@ -15,5 +15,6 @@ def request_header():
         for key, val in request.headers
     }
 
+
 def request_view_arg():
     return dict(request.view_args)
