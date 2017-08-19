@@ -36,7 +36,7 @@ class Base(MethodView):
     def as_view(cls, name, *class_args, **class_kwargs):
         _cls = generate_swagger(cls) if generate_swagger else cls
         view_func = super(Base, _cls).as_view(name, *class_args, **class_kwargs)
-        for decorator in cls.pre_decorators + [validate_schema]:
+        for decorator in [validate_schema] + cls.pre_decorators:
             if decorator:
                 view_func2 = decorator(view_func)
                 view_func2.view_class = view_func.view_class
