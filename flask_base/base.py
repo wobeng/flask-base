@@ -1,6 +1,9 @@
+import os
+
 import simplejson
 from flask import make_response, request
 from flask.views import MethodView
+from tldextract import extract
 
 from flask_base.schema import validate_schema
 from flask_base.swagger import generate_swagger
@@ -9,27 +12,51 @@ from flask_base.swagger import generate_swagger
 class Base(MethodView):
     pre_decorators = []
 
+    def __init__(self):
+        self.cookies = []
+
+    def set_cookie(self, name, content='', max_age=0, allowed_domains=None):
+        allowed_domains = allowed_domains or os.environ['ALLOWED_DOMAINS']
+        allowed_domains = allowed_domains.split(',')
+        request_url = extract(request.url)
+        if request_url.domain + '.' + request_url.suffix in allowed_domains:
+            domain = request_url.domain + '.' + request_url.suffix
+        else:
+            domain = allowed_domains[0]
+        self.cookies.append({
+            'key': name,
+            'value': content,
+            'httponly': True,
+            'max_age': max_age,
+            'secure': request.environ.get('HTTP_REFERER', 'https').startswith('https'),
+            'domain': '.' + domain
+        })
+
     @staticmethod
-    def success(data=None, msg=None):
+    def status_code(data):
+        codes = {
+            True: {'POST': 201, 'OTHER': 200},
+            False: {'POST': 201, 'GET': 404, 'OTHER': 204},
+        }
+        return codes.get(bool(data)).get(request.method, 'OTHER')
+
+    @staticmethod
+    def make_response(data=None, msg=None):
         data = data or {}
         if msg:
             data['message'] = msg
         if data:
             data = {'data': {'items': data}}
             data = simplejson.dumps(data, indent=3)
-            status_code = 200
-            if request.method == 'POST':
-                status_code = 201
-        else:
-            data = ''
-            status_code = 204
-            if request.method == 'GET':
-                status_code = 404
-            elif request.method == 'POST':
-                status_code = 201
-        response = make_response(data)
-        response.status_code = status_code
+        response = make_response(data or '')
+        response.status_code = Base.status_code(data)
         response.headers['Content-Type'] = 'application/json'
+        return response
+
+    def success(self, data=None, msg=None):
+        response = self.make_response(data, msg)
+        for cookie in self.cookies:
+            response.set_cookie(**cookie)
         return response
 
     @classmethod
