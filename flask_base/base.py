@@ -49,6 +49,9 @@ class Base(MethodView):
             data = {'data': {'items': data}}
             data = simplejson.dumps(data, indent=3)
         response = make_response(data or '')
+        print(data)
+        print(Base.status_code(data))
+        print(bool(data))
         response.status_code = Base.status_code(data)
         response.headers['Content-Type'] = 'application/json'
         return response
