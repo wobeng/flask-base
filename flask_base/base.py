@@ -34,11 +34,12 @@ class Base(MethodView):
 
     @staticmethod
     def status_code(data):
+        data = bool(data)
         codes = {
             True: {'POST': 201, 'OTHER': 200},
             False: {'POST': 201, 'GET': 404, 'OTHER': 204},
         }
-        return codes.get(bool(data)).get(request.method, 'OTHER')
+        return codes.get(data).get(request.method, codes[data]['OTHER'])
 
     @staticmethod
     def make_response(data=None, msg=None):
@@ -49,9 +50,6 @@ class Base(MethodView):
             data = {'data': {'items': data}}
             data = simplejson.dumps(data, indent=3)
         response = make_response(data or '')
-        print(data)
-        print(Base.status_code(data))
-        print(bool(data))
         response.status_code = Base.status_code(data)
         response.headers['Content-Type'] = 'application/json'
         return response
