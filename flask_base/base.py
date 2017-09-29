@@ -3,7 +3,6 @@ import os
 import simplejson
 from flask import make_response, request
 from flask.views import MethodView
-from tldextract import extract
 
 from flask_base.schema import validate_schema
 from flask_base.swagger import generate_swagger
@@ -18,11 +17,10 @@ class Base(MethodView):
     def set_cookie(self, name, content='', max_age=0, allowed_domains=None):
         allowed_domains = allowed_domains or os.environ['ALLOWED_DOMAINS']
         allowed_domains = allowed_domains.split(',')
-        request_url = extract(request.url)
-        if request_url.domain + '.' + request_url.suffix in allowed_domains:
-            domain = request_url.domain + '.' + request_url.suffix
-        else:
-            domain = allowed_domains[0]
+        domain = allowed_domains[0]
+        for allowed_domain in allowed_domains:
+            if str(request.host).endswith(allowed_domain):
+                domain = allowed_domain
         self.cookies.append({
             'key': name,
             'value': content,
