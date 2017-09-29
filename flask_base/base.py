@@ -14,7 +14,7 @@ class Base(MethodView):
     def __init__(self):
         self.cookies = []
 
-    def set_cookie(self, name, content='', max_age=0, allowed_domains=None):
+    def set_cookie(self, name, content='', max_age=0, allowed_domains=None, http_only=True):
         allowed_domains = allowed_domains or os.environ['ALLOWED_DOMAINS']
         allowed_domains = allowed_domains.split(',')
         domain = allowed_domains[0]
@@ -24,7 +24,7 @@ class Base(MethodView):
         self.cookies.append({
             'key': name,
             'value': content,
-            'httponly': True,
+            'httponly': http_only,
             'max_age': max_age,
             'secure': request.environ.get('HTTP_REFERER', 'https').startswith('https'),
             'domain': '.' + domain
