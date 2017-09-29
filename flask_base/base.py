@@ -19,7 +19,7 @@ class Base(MethodView):
         allowed_domains = allowed_domains.split(',')
         domain = allowed_domains[0]
         for allowed_domain in allowed_domains:
-            if str(request.host).endswith(allowed_domain):
+            if allowed_domain in str(request.host):
                 domain = allowed_domain
         self.cookies.append({
             'key': name,
