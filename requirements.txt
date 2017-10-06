@@ -4,4 +4,3 @@ simplejson
 flasgger
 apispec
 PyYAML
-git+ssh://git@github.com/wobeng/py-utils.git@master

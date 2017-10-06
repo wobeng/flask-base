@@ -1,5 +1,6 @@
 from marshmallow import Schema
-from py_utils.mmallow import String, List, ContainsOnly
+from marshmallow.fields import String, List
+from marshmallow.validate import ContainsOnly
 
 
 class CaseTestSchema:

@@ -9,9 +9,6 @@ setup(
     author='wobeng',
     author_email='wobeng@yblew.com',
     description='flask base app',
-    dependency_links=[
-        'git+ssh://git@github.com/wobeng/py-utils.git@master#egg=py-utils-1.0.0'
-    ],
     install_requires=[
         'Flask',
         'marshmallow',
