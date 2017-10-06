@@ -1,8 +1,7 @@
 from flasgger import Swagger
 from flask import Flask, jsonify
 from flask_cors import CORS
-
-from py_utils.exceptions import Error
+from flask_base.exceptions import Error
 
 
 def init_api(name, **cors):

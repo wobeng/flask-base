@@ -1,4 +1,18 @@
-from py_utils.exceptions import Error
+class Error(Exception):
+    def __init__(self, message, status_code=400, payload=None):
+        Exception.__init__(self, message)
+        self.payload = payload
+        self.message = message
+        self.status_code = status_code
+
+    def to_dict(self):
+        return {
+            'error': {
+                'code': self.status_code,
+                'message': self.payload[0]['message'],
+                'errors': self.payload
+            }
+        }
 
 
 class Schema(Error):
