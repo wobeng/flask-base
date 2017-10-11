@@ -21,9 +21,8 @@ def init_api(name, title='', uiversion=2, supports_credentials=False, origins='*
     # load flask environment in app
     flask_vars = flask_vars or {}
     translate = {'True': True, 'False': False, 'None': None}
-    print(flask_vars)
     for k, v in flask_vars.items():
-        app.config[k] = translate.get(v)
+        app.config[k] = translate.get(v, v)
 
     # handle error
     @app.errorhandler(Error)
