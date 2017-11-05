@@ -11,11 +11,14 @@ def init_api(name, title='', uiversion=2, supports_credentials=False, origins='*
 
     # init cors
     if origins != '*':
-        if 'https:' in origins:
-            other_protocol = origins.replace('https:', 'http:')
-        else:
-            other_protocol = origins.replace('http:', 'https:')
-        origins = [origins, other_protocol]
+        if isinstance(origins, str):
+            origins = [origins]
+        for origin in list(origins):
+            if 'https:' in origin:
+                other_protocol = origin.replace('https:', 'http:')
+            else:
+                other_protocol = origin.replace('http:', 'https:')
+            origins.append(other_protocol)
     CORS(app, origins=origins, supports_credentials=supports_credentials)
 
     # load flask environment in app
