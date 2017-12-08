@@ -10,7 +10,7 @@ def function_args(func):
     response = OrderedDict()
     args = inspect.signature(func).parameters
     # arrange function as args as a dict
-    for k, v in {k: v for k, v in args.items() if k != 'self'}.items():
+    for k, v in {k: v for k, v in args.items() if k not in ['self', 'args', 'kwargs']}.items():
         v = str(v)
         try:
             default = v.split('=')[1]
