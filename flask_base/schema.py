@@ -46,7 +46,6 @@ def validate_schema(view_func):
         for arg in view_func_args:
             if arg in http_path:
                 g.incoming_data[arg] = getattr(reqdata, 'request_' + arg)()
-        print(g.incoming_data)
 
         # process incoming data
         for arg in view_func_args:
