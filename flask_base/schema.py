@@ -29,7 +29,7 @@ def validate_schema(view_func):
     def wrapper(*args, **kwargs):
 
         """For each incoming data given, load and validate"""
-        processed_data = {}
+        g.processed_data = {}
 
         request_method = getattr(view_func.view_class, request.method.lower())
         view_func_args = function_args(request_method)
@@ -45,7 +45,7 @@ def validate_schema(view_func):
 
             # set non http_path to none for now
             if arg not in http_path:
-                processed_data[arg] = None
+                g.processed_data[arg] = None
                 continue
 
             # get data from request
@@ -56,16 +56,16 @@ def validate_schema(view_func):
             if arg == 'view_arg' and hasattr(g, 'view_args'):  # check for url processors
                 data.update(g.view_args)
             schemas = find_schemas(request.method.title(), arg, view_func.view_class.schema)
-            processed_data[arg] = load_schemas(arg, data, schemas, view_func.view_class.__name__)
+            g.processed_data[arg] = load_schemas(arg, data, schemas, view_func.view_class.__name__)
 
         # pass validated url variable overriding non http_path
-        if 'view_arg' in processed_data:
-            processed_data.update(processed_data.pop('view_arg'))
+        if 'view_arg' in g.processed_data:
+            g.processed_data.update(g.processed_data.pop('view_arg'))
 
         # update function with requested data
-        for arg in processed_data:
+        for arg in g.processed_data:
             if arg in view_func_args and view_func_args[arg]['scope'] == 'local':
-                kwargs[arg] = processed_data[arg]
+                kwargs[arg] = g.processed_data[arg]
         return view_func(*args, **kwargs)
 
     return wrapper
