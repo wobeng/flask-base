@@ -30,6 +30,7 @@ def validate_schema(view_func):
 
         """For each incoming data given, load and validate"""
         g.processed_data = {}
+        g.incoming_data = {}
 
         request_method = getattr(view_func.view_class, request.method.lower())
         view_func_args = function_args(request_method)
@@ -41,6 +42,12 @@ def validate_schema(view_func):
                     view_func_args[arg] = view_func.view_class.global_args[arg]
                     view_func_args[arg]['scope'] = 'global'
 
+        # store unprocessed incoming data
+        for arg in view_func_args:
+            if arg in http_path:
+                g.incoming_data[arg] = getattr(reqdata, 'request_' + arg)()
+
+        # process incoming data
         for arg in view_func_args:
 
             # set non http_path to none for now
