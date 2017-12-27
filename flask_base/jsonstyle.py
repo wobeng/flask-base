@@ -55,5 +55,5 @@ class GoogleJsonStyle:
         body = OrderedDict(body)
         if 'items' in body:
             body['items'] = body.pop('items')
-        body = simplejson.dumps(body, indent=3)
-        return {'data': body}
+        body = simplejson.dumps({'data': body}, indent=3)
+        return body
