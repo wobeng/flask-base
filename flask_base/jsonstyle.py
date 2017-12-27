@@ -10,7 +10,7 @@ class GoogleJsonStyle:
         self.data = data or {}
         if msg:
             self.data['message'] = msg
-        if 'Items' in data:
+        if 'Items' in self.data:
             self.data['items'] = self.data.pop('Items')
 
     @staticmethod
