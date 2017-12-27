@@ -16,7 +16,8 @@ class GoogleJsonStyle:
         for k in dict(data):
             if k.lower().endswith('count'):
                 del data[k]
-        data['currentItemCount'] = len(data['items']) if 'items' in data else 1
+        if 'items' in data:
+            data['currentItemCount'] = len(data['items'])
         return data
 
     @staticmethod
@@ -55,4 +56,4 @@ class GoogleJsonStyle:
         if 'items' in body:
             body['items'] = body.pop('items')
         body = simplejson.dumps(body, indent=3)
-        return body
+        return {'data': body}
