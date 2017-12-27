@@ -52,6 +52,7 @@ class GoogleJsonStyle:
         body = self.add_edit_self(body)
         body = self.add_next_link(body)
         body = OrderedDict(body)
-        body['items'] = body.pop('items')
+        if 'items' in body:
+            body['items'] = body.pop('items')
         body = simplejson.dumps(body, indent=3)
         return body
