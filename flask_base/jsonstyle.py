@@ -8,9 +8,8 @@ class GoogleJsonStyle:
     def __init__(self, parent, data, msg=None):
         self.parent = parent
         self.data = data or {}
-
         if msg:
-            data['message'] = msg
+            self.data['message'] = msg
 
     @staticmethod
     def add_count(data):
