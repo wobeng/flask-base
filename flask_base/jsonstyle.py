@@ -1,4 +1,5 @@
 from collections import OrderedDict
+from urllib.parse import urlencode
 
 import simplejson
 from flask import request
@@ -31,7 +32,7 @@ class GoogleJsonStyle:
     def add_next_link(data):
         if 'items' in data:
             if 'LastEvaluatedKey' in data:
-                data['nextLink'] = request.url + '?start=' + data.pop('LastEvaluatedKey')
+                data['nextLink'] = request.url + '?' + urlencode({'start': data.pop('LastEvaluatedKey')})
         return data
 
     def status_code(self):
