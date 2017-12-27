@@ -60,7 +60,7 @@ def validate_schema(view_func):
         # store unprocessed incoming data
         for arg in view_func_args:
             if arg in http_path:
-                g.incoming_data[arg] = incoming_data(arg)()
+                g.incoming_data[arg] = incoming_data(arg)
 
         # process incoming data
         for arg in view_func_args:
@@ -74,7 +74,7 @@ def validate_schema(view_func):
             # find schemas for request
             # validate schemas
 
-            data = incoming_data(arg)()
+            data = incoming_data(arg)
             if arg == 'view_arg' and hasattr(g, 'view_args'):  # check for url processors
                 data.update(g.view_args)
             schemas = find_schemas(request.method.title(), arg, view_func.view_class.schema)
