@@ -1,31 +1,46 @@
 from flask import request, g
 
 import flask_base.exceptions as excepts
-from flask_base import reqdata
 from flask_base.utils import function_args, http_path, find_schemas
 
 
+def incoming_data(location):
+    header = {
+        key.lower().replace('-', '_'): val
+        for key, val in request.headers
+    }
+    incoming = {
+        'body': request.get_json(True, True) or request.form,
+        'query': request.args,
+        'header': header,
+        'view_arg': dict(request.view_args)
+
+    }
+    return incoming[location]
+
+
+def load_schemas(path, data, schemas, class_name):
+    """Load and validate parent and child schema"""
+
+    schemas_data = {}
+    schemas_errors = {}
+
+    for schema in schemas:
+
+        schema_data, schema_errors = schema().load(data)
+        schemas_data.update(schema_data)
+
+        if schema_errors:
+            schemas_errors.update(schema_errors)
+
+    if schemas_errors:
+        expectation = getattr(excepts, path.title().replace('_', ''))
+        raise expectation(schemas_errors, class_name)
+
+    return schemas_data
+
+
 def validate_schema(view_func):
-    def load_schemas(path, data, schemas, class_name):
-        """Load and validate parent and child schema"""
-
-        schemas_data = {}
-        schemas_errors = {}
-
-        for schema in schemas:
-
-            schema_data, schema_errors = schema().load(data)
-            schemas_data.update(schema_data)
-
-            if schema_errors:
-                schemas_errors.update(schema_errors)
-
-        if schemas_errors:
-            expectation = getattr(excepts, path.title().replace('_', ''))
-            raise expectation(schemas_errors, class_name)
-
-        return schemas_data
-
     def wrapper(*args, **kwargs):
 
         """For each incoming data given, load and validate"""
@@ -45,7 +60,7 @@ def validate_schema(view_func):
         # store unprocessed incoming data
         for arg in view_func_args:
             if arg in http_path:
-                g.incoming_data[arg] = getattr(reqdata, 'request_' + arg)()
+                g.incoming_data[arg] = incoming_data(arg)()
 
         # process incoming data
         for arg in view_func_args:
@@ -59,7 +74,7 @@ def validate_schema(view_func):
             # find schemas for request
             # validate schemas
 
-            data = getattr(reqdata, 'request_' + arg)()
+            data = incoming_data(arg)()
             if arg == 'view_arg' and hasattr(g, 'view_args'):  # check for url processors
                 data.update(g.view_args)
             schemas = find_schemas(request.method.title(), arg, view_func.view_class.schema)

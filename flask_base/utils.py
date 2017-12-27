@@ -1,5 +1,8 @@
 import inspect
+import os
 from collections import OrderedDict
+
+from flask import request
 
 http_path = ['path', 'body', 'query', 'header', 'view_arg']
 http_methods = ['get', 'head', 'post', 'put', 'delete', 'connect', 'options', 'trace', 'patch']
@@ -39,3 +42,20 @@ def find_schemas(method, path, schema):
         if not schemas:
             raise
     return schemas
+
+
+def generate_cookie(name, content='', max_age=0, allowed_domains=None, http_only=True):
+    allowed_domains = allowed_domains or os.environ['ALLOWED_DOMAINS']
+    allowed_domains = allowed_domains.split(',')
+    domain = allowed_domains[0]
+    for allowed_domain in allowed_domains:
+        if allowed_domain in str(request.host):
+            domain = allowed_domain
+    return {
+        'key': name,
+        'value': content,
+        'httponly': http_only,
+        'max_age': max_age,
+        'secure': request.environ.get('HTTP_REFERER', 'https').startswith('https'),
+        'domain': '.' + domain
+    }

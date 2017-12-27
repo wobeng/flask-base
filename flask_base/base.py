@@ -1,11 +1,10 @@
-import os
-
-import simplejson
-from flask import make_response, request
+from flask import make_response
 from flask.views import MethodView
 
+from flask_base.jsonstyle import GoogleJsonStyle
 from flask_base.schema import validate_schema
 from flask_base.swagger import generate_swagger
+from flask_base.utils import generate_cookie
 
 
 class Base(MethodView):
@@ -15,45 +14,13 @@ class Base(MethodView):
         self.cookies = []
 
     def set_cookie(self, name, content='', max_age=0, allowed_domains=None, http_only=True):
-        allowed_domains = allowed_domains or os.environ['ALLOWED_DOMAINS']
-        allowed_domains = allowed_domains.split(',')
-        domain = allowed_domains[0]
-        for allowed_domain in allowed_domains:
-            if allowed_domain in str(request.host):
-                domain = allowed_domain
-        self.cookies.append({
-            'key': name,
-            'value': content,
-            'httponly': http_only,
-            'max_age': max_age,
-            'secure': request.environ.get('HTTP_REFERER', 'https').startswith('https'),
-            'domain': '.' + domain
-        })
-
-    @staticmethod
-    def status_code(data):
-        data = bool(data)
-        codes = {
-            True: {'POST': 201, 'OTHER': 200},
-            False: {'POST': 201, 'GET': 404, 'OTHER': 204},
-        }
-        return codes.get(data).get(request.method, codes[data]['OTHER'])
-
-    @staticmethod
-    def make_response(data=None, msg=None):
-        data = data or {}
-        if msg:
-            data['message'] = msg
-        if data:
-            data = {'data': {'items': data}}
-            data = simplejson.dumps(data, indent=3)
-        response = make_response(data or '')
-        response.status_code = Base.status_code(data)
-        response.headers['Content-Type'] = 'application/json'
-        return response
+        self.cookies.append(generate_cookie(name, content, max_age, allowed_domains, http_only))
 
     def success(self, data=None, msg=None):
-        response = self.make_response(data, msg)
+        style = GoogleJsonStyle(self, data, msg)
+        response = make_response(style.body())
+        response.status_code = style.status_code()
+        response.headers['Content-Type'] = 'application/json'
         for cookie in self.cookies:
             response.set_cookie(**cookie)
         return response
