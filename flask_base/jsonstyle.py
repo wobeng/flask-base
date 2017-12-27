@@ -10,6 +10,8 @@ class GoogleJsonStyle:
         self.data = data or {}
         if msg:
             self.data['message'] = msg
+        if 'Items' in data:
+            self.data['items'] = self.data.pop('Items')
 
     @staticmethod
     def add_count(data):
