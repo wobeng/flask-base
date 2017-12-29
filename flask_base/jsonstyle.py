@@ -4,6 +4,7 @@ from urllib.parse import urlencode
 
 import simplejson
 from flask import request, g
+from werkzeug.urls import iri_to_uri
 
 
 class GoogleJsonStyle:
@@ -26,7 +27,7 @@ class GoogleJsonStyle:
 
     @staticmethod
     def add_self(data):
-        data['selfLink'] = request.url
+        data['selfLink'] = iri_to_uri(request.url)
         return data
 
     @staticmethod
@@ -51,7 +52,7 @@ class GoogleJsonStyle:
 
     def add_edit_self(self, data):
         if hasattr(self.parent, 'put') or hasattr(self.parent, 'delete') or hasattr(self.parent, 'patch'):
-            data['editLink'] = request.url
+            data['editLink'] = request.base_url
         return data
 
     def body(self):
