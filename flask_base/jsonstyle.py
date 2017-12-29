@@ -1,3 +1,4 @@
+import json
 from collections import OrderedDict
 from urllib.parse import urlencode
 
@@ -32,7 +33,8 @@ class GoogleJsonStyle:
     def add_next_link(data):
         if 'items' in data:
             if 'LastEvaluatedKey' in data:
-                start = ('&' if '?' in request.url else '?') + urlencode({'start': data.pop('LastEvaluatedKey')})
+                start = urlencode({'start': json.dumps(data.pop('LastEvaluatedKey'))})
+                start = ('&' if '?' in request.url else '?') + start
                 data['nextLink'] = request.url + start
         return data
 
