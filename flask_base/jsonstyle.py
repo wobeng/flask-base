@@ -32,7 +32,8 @@ class GoogleJsonStyle:
     def add_next_link(data):
         if 'items' in data:
             if 'LastEvaluatedKey' in data:
-                data['nextLink'] = request.url + '?' + urlencode({'start': data.pop('LastEvaluatedKey')})
+                start = ('&' if '?' in request.url else '?') + urlencode({'start': data.pop('LastEvaluatedKey')})
+                data['nextLink'] = request.url + start
         return data
 
     def status_code(self):
