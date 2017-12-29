@@ -35,7 +35,7 @@ class GoogleJsonStyle:
             if 'LastEvaluatedKey' in data:
                 query = dict(g.incoming_data.get('query', {}))
                 query.pop('start', None)  # delete old start key
-                query = '&'.join('{}={}'.format(key, val) for key, val in query.items())
+                query = '&'.join('{}={}'.format(key, val[0]) for key, val in query.items())
                 query = '&' + query if query else query  # add & if not empty
                 start = urlencode({'start': json.dumps(data.pop('LastEvaluatedKey'))})
                 data['nextLink'] = request.base_url + '?' + start + query
