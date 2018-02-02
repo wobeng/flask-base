@@ -1,5 +1,4 @@
 import inspect
-import os
 from collections import OrderedDict
 
 from flask import request
@@ -45,7 +44,6 @@ def find_schemas(method, path, schema):
 
 
 def generate_cookie(name, content='', max_age=0, allowed_domains=None, http_only=True):
-    allowed_domains = allowed_domains or os.environ['ALLOWED_DOMAINS']
     allowed_domains = allowed_domains.split(',')
     domain = allowed_domains[0]
     for allowed_domain in allowed_domains:
