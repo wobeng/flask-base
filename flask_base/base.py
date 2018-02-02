@@ -9,10 +9,10 @@ from flask_base.utils import generate_cookie
 
 class Base(MethodView):
     pre_decorators = []
+    cookies_allowed_domains = ''
 
     def __init__(self):
         self.cookies = []
-        self.cookies_allowed_domains = ''
 
     def set_cookie(self, name, content='', max_age=0, allowed_domains=None, http_only=True):
         allowed_domains = allowed_domains or self.cookies_allowed_domains
