@@ -19,8 +19,6 @@ def init_api(name, title='', uiversion=2, supports_credentials=False, origins='*
             else:
                 other_protocol = origin.replace('http:', 'https:')
             origins.append(other_protocol)
-    print(origins)
-    print(supports_credentials)
     CORS(app, origins=origins, supports_credentials=supports_credentials)
 
     # load flask environment in app
