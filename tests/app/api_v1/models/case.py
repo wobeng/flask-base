@@ -9,9 +9,6 @@ class CaseTestSchema:
         path1 = String()
 
     class Get:
-        class Body(Schema):
-            get_body_id = String()
-
         class Query(Schema):
             get_query_id = List(String, validate=ContainsOnly(('two', 'one')))
 
@@ -23,10 +20,11 @@ class CaseTestSchema:
 
     class Post:
         class Body(Schema):
-            post_body_id = String()
+            post_body_id1 = String(required=True, example='testing missing1')
+            post_body_id2 = String(example='testing missing2')
 
         class Query(Schema):
-            post_query_id = String()
+            post_query_id = String(example='testing example query')
 
         class Header(Schema):
             post_header_id = String()

@@ -80,8 +80,10 @@ def generate_swagger(cls):
                     parameter['type'] = v['type']
                     if 'required' in spec[class_name] and f in spec[class_name]['required']:
                         parameter['required'] = True
-                    if 'missing' in spec[class_name]['properties'][f]:
-                        parameter['example'] = spec[class_name]['properties'][f]['missing']
+                    if 'example' in spec[class_name]['properties'][f]:
+                        parameter['example'] = spec[class_name]['properties'][f]['example']
+                    if 'default' in spec[class_name]['properties'][f]:
+                        parameter['default'] = spec[class_name]['properties'][f]['default']
                     parameters.append(parameter)
 
         output = list([class_name, class_name, '---'])
