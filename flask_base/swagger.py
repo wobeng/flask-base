@@ -7,6 +7,7 @@ from apispec.ext.flask import FlaskPlugin
 from apispec.ext.marshmallow import MarshmallowPlugin
 from flask_base.utils import function_args, http_path, find_schemas, http_methods
 
+ma_plugin = MarshmallowPlugin()
 
 def generate_swagger(cls):
     def update_nested(orig_dict, new_dict):
@@ -29,7 +30,7 @@ def generate_swagger(cls):
             openapi_version='2.0',
             plugins=(
                 FlaskPlugin(),
-                MarshmallowPlugin(),
+                ma_plugin,
             ),
         )
         api_spec.definition(class_name, schema=schema)
