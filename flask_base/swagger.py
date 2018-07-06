@@ -5,9 +5,19 @@ import yaml
 from apispec import APISpec
 from apispec.ext.flask import FlaskPlugin
 from apispec.ext.marshmallow import MarshmallowPlugin
+
 from flask_base.utils import function_args, http_path, find_schemas, http_methods
 
-ma_plugin = MarshmallowPlugin()
+mm_plugin = MarshmallowPlugin()
+flask_plugin = FlaskPlugin()
+
+api_spec = APISpec(
+    title='',
+    version='1.0.0',
+    openapi_version='2.0',
+    plugins=(mm_plugin, flask_plugin)
+)
+
 
 def generate_swagger(cls):
     def update_nested(orig_dict, new_dict):
@@ -24,15 +34,8 @@ def generate_swagger(cls):
 
     def generate_spec(schema):
         """Generate apispec """
-        api_spec = APISpec(
-            title=class_name,
-            version='1.0.0',
-            openapi_version='2.0',
-            plugins=(
-                FlaskPlugin(),
-                ma_plugin,
-            ),
-        )
+        api_spec.info['title'] = class_name
+        api_spec.info['version'] = '1.0.0'
         api_spec.definition(class_name, schema=schema)
         return simplejson.loads(simplejson.dumps(api_spec.to_dict()['definitions']))
 
