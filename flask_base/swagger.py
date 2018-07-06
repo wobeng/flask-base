@@ -1,4 +1,5 @@
 from collections import Mapping
+from copy import deepcopy
 
 import simplejson
 import yaml
@@ -34,10 +35,11 @@ def generate_swagger(cls):
 
     def generate_spec(schema):
         """Generate apispec """
-        api_spec.info['title'] = class_name
-        api_spec.info['version'] = '1.0.0'
-        api_spec.definition(class_name, schema=schema)
-        return simplejson.loads(simplejson.dumps(api_spec.to_dict()['definitions']))
+        new_spec = deepcopy(api_spec)
+        new_spec.info['title'] = class_name
+        new_spec.info['version'] = '1.0.0'
+        new_spec.definition(class_name, schema=schema)
+        return simplejson.loads(simplejson.dumps(new_spec.to_dict()['definitions']))
 
     def find_specs(schemas):
         """Generate apispec for parent and child schema"""
