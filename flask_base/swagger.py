@@ -3,7 +3,8 @@ from collections import Mapping
 import simplejson
 import yaml
 from apispec import APISpec
-
+from apispec.ext.flask import FlaskPlugin
+from apispec.ext.marshmallow import MarshmallowPlugin
 from flask_base.utils import function_args, http_path, find_schemas, http_methods
 
 
@@ -25,9 +26,10 @@ def generate_swagger(cls):
         api_spec = APISpec(
             title=class_name,
             version='1.0.0',
+            openapi_version='2.0',
             plugins=(
-                'apispec.ext.flask',
-                'apispec.ext.marshmallow',
+                FlaskPlugin(),
+                MarshmallowPlugin(),
             ),
         )
         api_spec.definition(class_name, schema=schema)
