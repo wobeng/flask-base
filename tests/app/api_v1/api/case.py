@@ -8,7 +8,11 @@ class CaseTest(Api):
     schema = CaseTestSchema
 
     def get(self, query, path1, path2):
-        return jsonify(query, path1, path2)
+        return self.success({
+            'query': query,
+            'path1': path1,
+            'path2': path2
+        })
 
     def post(self, body, query, path1, path2):
         return jsonify(body, query, path1, path2)

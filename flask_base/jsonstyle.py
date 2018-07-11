@@ -27,7 +27,9 @@ class GoogleJsonStyle:
 
     @staticmethod
     def add_self(data):
-        data['selfLink'] = iri_to_uri(request.url)
+        callback = request.args.get('callback', '')
+        data['selfLink'] = iri_to_uri(request.url).replace('?callback=' + callback, '').replace('&callback=' + callback,
+                                                                                                '')
         return data
 
     @staticmethod
