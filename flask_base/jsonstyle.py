@@ -42,6 +42,13 @@ class GoogleJsonStyle:
                 data['nextLink'] = request.base_url + '?' + start + query
         return data
 
+    @staticmethod
+    def content_type():
+        if request.args.get('callback'):
+            return 'application/javascript'
+        else:
+            return 'application/json'
+
     def status_code(self):
         data = bool(self.data)
         codes = {
@@ -66,4 +73,6 @@ class GoogleJsonStyle:
         if 'items' in body:
             body['items'] = body.pop('items')
         body = simplejson.dumps({'data': body}, indent=3)
+        if request.args.get('callback'):
+            body = '{}({});'.format(request.args.get('callback'), body)
         return body
