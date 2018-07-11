@@ -22,7 +22,7 @@ class Base(MethodView):
         style = GoogleJsonStyle(self, data, msg)
         response = make_response(style.body())
         response.status_code = style.status_code()
-        response.headers['Content-Type'] = 'application/json'
+        response.headers['Content-Type'] = style.content_type()
         for cookie in self.cookies:
             response.set_cookie(**cookie)
         return response
