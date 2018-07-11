@@ -28,8 +28,10 @@ class GoogleJsonStyle:
     @staticmethod
     def add_self(data):
         callback = request.args.get('callback', '')
-        data['selfLink'] = iri_to_uri(request.url).replace('?callback=' + callback, '').replace('&callback=' + callback,
-                                                                                                '')
+        self_link = iri_to_uri(request.url)
+        self_link = self_link.replace('?callback=' + callback, '')
+        self_link = self_link.replace('&callback=' + callback, '')
+        data['selfLink'] = self_link
         return data
 
     @staticmethod
@@ -46,7 +48,7 @@ class GoogleJsonStyle:
 
     @staticmethod
     def content_type():
-        if request.args.get('callback'):
+        if request.args.get('callback') and request.method == 'GET':
             return 'application/javascript'
         else:
             return 'application/json'
@@ -75,6 +77,6 @@ class GoogleJsonStyle:
         if 'items' in body:
             body['items'] = body.pop('items')
         body = simplejson.dumps({'data': body}, indent=3)
-        if request.args.get('callback'):
+        if request.args.get('callback') and request.method == 'GET':
             body = '{}({});'.format(request.args.get('callback'), body)
         return body
