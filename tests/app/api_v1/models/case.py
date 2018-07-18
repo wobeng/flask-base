@@ -5,12 +5,15 @@ from marshmallow.validate import ContainsOnly
 
 class CaseTestSchema:
     class ViewArg(Schema):
-        app = String(required=True, default='cd8482612f04')
+        app = String(required=True, example='cd8482612f04')
         path1 = String()
+
+    class Header(Schema):
+        xsrf = String(required=True, example='testing', attribute='csrf')
 
     class Get:
         class Query(Schema):
-            get_query_id = List(String, validate=ContainsOnly(('two', 'one')))
+            get_query_id = List(String(), validate=ContainsOnly(('two', 'one')))
 
         class Header(Schema):
             get_header_id = String()
