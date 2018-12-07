@@ -4,3 +4,4 @@ simplejson
 flasgger
 apispec
 PyYAML
+flask-cors
