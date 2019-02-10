@@ -14,7 +14,7 @@ setup(
         'marshmallow',
         'simplejson',
         'flasgger',
-        'apispec',
+        'apispec>=1.0.0b5',
         'PyYAML',
         'flask-cors'
     ]
