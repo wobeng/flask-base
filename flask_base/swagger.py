@@ -36,9 +36,9 @@ def generate_swagger(cls):
     def generate_spec(schema):
         """Generate apispec """
         new_spec = deepcopy(api_spec)
-        new_spec.info['title'] = class_name
-        new_spec.info['version'] = '1.0.0'
-        new_spec.definition(class_name, schema=schema)
+        new_spec.title = class_name
+        new_spec.version = '1.0.0'
+        new_spec.components.schema(class_name, schema=schema)
         return simplejson.loads(simplejson.dumps(new_spec.to_dict()['definitions']))
 
     def find_specs(schemas):
