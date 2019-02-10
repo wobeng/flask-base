@@ -15,6 +15,7 @@ setup(
         'simplejson',
         'flasgger',
         'apispec==1.0.0b6',
+        'apispec-webframeworks',
         'PyYAML',
         'flask-cors'
     ]
