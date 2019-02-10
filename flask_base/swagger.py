@@ -4,7 +4,7 @@ from copy import deepcopy
 import simplejson
 import yaml
 from apispec import APISpec
-from apispec.ext.flask import FlaskPlugin
+from apispec_webframeworks.flask import FlaskPlugin
 from apispec.ext.marshmallow import MarshmallowPlugin
 
 from flask_base.utils import function_args, http_path, find_schemas, http_methods
