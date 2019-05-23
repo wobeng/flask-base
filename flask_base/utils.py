@@ -49,8 +49,7 @@ def generate_cookie(name, content='', max_age=0, allowed_domains=None, http_only
         'value': content,
         'httponly': http_only,
         'max_age': max_age,
-        'secure': request.environ.get('HTTP_REFERER', 'https').startswith('https'),
-        'domain': 'localhost'
+        'secure': request.environ.get('HTTP_REFERER', 'https').startswith('https')
     }
 
     if allowed_domains is not False:
