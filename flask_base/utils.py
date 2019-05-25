@@ -43,7 +43,7 @@ def find_schemas(method, path, schema):
     return schemas
 
 
-def generate_cookie(name, content='', max_age=0, allowed_domains=None, http_only=True):
+def generate_cookie(name, content='', max_age=0, allowed_domains=None, http_only=True, samesite=None):
     cookie = {
         'key': name,
         'value': content,
@@ -52,12 +52,14 @@ def generate_cookie(name, content='', max_age=0, allowed_domains=None, http_only
         'secure': request.environ.get('HTTP_REFERER', 'https').startswith('https')
     }
 
-    if allowed_domains is not False:
-        allowed_domains = allowed_domains.split(',')
-        domain = allowed_domains[0]
-        for allowed_domain in allowed_domains:
-            if allowed_domain in str(request.host):
-                domain = allowed_domain
-        cookie['domain'] = '.' + domain
+    allowed_domains = allowed_domains.split(',')
+    domain = allowed_domains[0]
+    for allowed_domain in allowed_domains:
+        if allowed_domain in str(request.host):
+            domain = allowed_domain
+    cookie['domain'] = '.' + domain
+
+    if samesite:
+        cookie['samesite'] = samesite
 
     return cookie
