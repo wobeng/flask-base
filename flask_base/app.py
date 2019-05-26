@@ -14,7 +14,6 @@ def init_api(name, title='', uiversion=2, supports_credentials=False, origins='*
     if origins != '*':
         if isinstance(origins, str):
             origins = [origins]
-    print(origins)
     CORS(app, origins=origins, supports_credentials=supports_credentials)
 
     # load flask environment in app
