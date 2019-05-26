@@ -14,7 +14,7 @@ class Base(MethodView):
     def __init__(self):
         self.cookies = []
 
-    def set_cookie(self, name, content='', max_age=0, allowed_domains=None, http_only=True, samesite=None):
+    def set_cookie(self, name, content='', max_age=0, allowed_domains=None, http_only=True, samesite=True):
         allowed_domains = allowed_domains or self.cookies_allowed_domains
         self.cookies.append(generate_cookie(name, content, max_age, allowed_domains, http_only, samesite))
 

@@ -43,13 +43,14 @@ def find_schemas(method, path, schema):
     return schemas
 
 
-def generate_cookie(name, content='', max_age=0, allowed_domains=None, http_only=True, samesite=None):
+def generate_cookie(name, content='', max_age=0, allowed_domains=None, http_only=True, samesite=True):
+    secure = request.environ.get('HTTP_REFERER', 'https').startswith('https')
     cookie = {
         'key': name,
         'value': content,
         'httponly': http_only,
         'max_age': max_age,
-        'secure': request.environ.get('HTTP_REFERER', 'https').startswith('https')
+        'secure': secure
     }
 
     allowed_domains = allowed_domains.split(',')
@@ -59,7 +60,7 @@ def generate_cookie(name, content='', max_age=0, allowed_domains=None, http_only
             domain = allowed_domain
     cookie['domain'] = '.' + domain
 
-    if samesite:
+    if samesite and secure:
         cookie['samesite'] = samesite
 
     return cookie
