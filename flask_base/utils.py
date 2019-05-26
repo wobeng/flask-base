@@ -61,6 +61,6 @@ def generate_cookie(name, content='', max_age=0, allowed_domains=None, http_only
     cookie['domain'] = '.' + domain
 
     if samesite and secure:
-        cookie['samesite'] = samesite
+        cookie['samesite'] = 'Strict'
 
     return cookie
