@@ -1,10 +1,16 @@
 import inspect
 from collections import OrderedDict
 
+from apispec.ext.marshmallow import openapi
 from flask import request
 
 http_path = ['path', 'body', 'query', 'header', 'view_arg']
 http_methods = ['get', 'head', 'post', 'put', 'delete', 'connect', 'options', 'trace', 'patch']
+
+
+class OpenAPIConverter2(openapi.OpenAPIConverter):
+    def __init__(self, openapi_version, schema_name_resolver=None, spec=None):
+        super().__init__(openapi_version)
 
 
 def function_args(func):

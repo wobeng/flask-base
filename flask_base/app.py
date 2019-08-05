@@ -1,3 +1,8 @@
+from apispec.ext.marshmallow import openapi
+
+from flask_base.utils import OpenAPIConverter2
+
+openapi.OpenAPIConverter = OpenAPIConverter2
 from flasgger import Swagger, LazyString, LazyJSONEncoder
 from flask import Flask, jsonify, request, redirect
 from flask_cors import CORS
