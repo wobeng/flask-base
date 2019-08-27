@@ -6,8 +6,7 @@ openapi.OpenAPIConverter = OpenAPIConverter2
 from flasgger import Swagger, LazyString, LazyJSONEncoder
 from flask import Flask, jsonify, request, redirect
 from flask_cors import CORS
-from werkzeug.contrib.fixers import ProxyFix
-
+from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_base.exceptions import Error
 
 
@@ -48,5 +47,5 @@ def init_api(name, title='', uiversion=2, supports_credentials=False, origins='*
     def index():
         return redirect('/apidocs')
 
-    app.wsgi_app = ProxyFix(app.wsgi_app)
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
     return app
