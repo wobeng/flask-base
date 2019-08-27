@@ -10,7 +10,7 @@ http_methods = ['get', 'head', 'post', 'put', 'delete', 'connect', 'options', 't
 
 class OpenAPIConverter2(openapi.OpenAPIConverter):
     def __init__(self, openapi_version, schema_name_resolver=None, spec=None):
-        super().__init__(openapi_version)
+        super().__init__(openapi_version, schema_name_resolver, spec)
 
 
 def function_args(func):
