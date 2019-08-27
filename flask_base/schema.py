@@ -1,4 +1,5 @@
 from flask import request, g
+from marshmallow import EXCLUDE, ValidationError
 
 import flask_base.exceptions as excepts
 from flask_base.utils import function_args, http_path, find_schemas
@@ -27,11 +28,11 @@ def load_schemas(path, data, schemas, class_name):
 
     for schema in schemas:
 
-        schema_data, schema_errors = schema().load(data)
-        schemas_data.update(schema_data)
-
-        if schema_errors:
-            schemas_errors.update(schema_errors)
+        try:
+            data = schema().load(data, unknown=EXCLUDE)
+            schemas_data.update(data)
+        except ValidationError as err:
+            schemas_errors.update(err.messages)
 
     if schemas_errors:
         expectation = getattr(excepts, path.title().replace('_', ''))
