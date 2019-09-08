@@ -1,5 +1,5 @@
 from flask import request, g
-from marshmallow import INCLUDE, ValidationError
+from marshmallow import EXCLUDE, ValidationError
 
 import flask_base.exceptions as excepts
 from flask_base.utils import function_args, http_path, find_schemas
@@ -24,11 +24,10 @@ def load_schemas(path, data, schemas, class_name):
     """Load and validate parent and child schema"""
     schemas_data = {}
     schemas_errors = {}
-
     for schema in schemas:
         try:
-            data = schema().load(data, unknown=INCLUDE)
-            schemas_data.update(data)
+            output = schema().load(data, unknown=EXCLUDE)
+            schemas_data.update(output)
         except ValidationError as err:
             schemas_errors.update(err.messages)
     if schemas_errors:
