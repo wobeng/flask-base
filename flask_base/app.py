@@ -37,7 +37,6 @@ def init_api(name, title='', uiversion=2, supports_credentials=False, origins='*
     app.config['SWAGGER'] = dict(title=title, uiversion=uiversion)
     app.json_encoder = LazyJSONEncoder
     template = dict(
-        title=title,
         host=LazyString(lambda: request.host),
         schemes=[LazyString(lambda: 'https' if request.is_secure else 'http')]
     )
