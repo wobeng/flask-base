@@ -15,7 +15,7 @@ setup(
         'simplejson',
         'flasgger',
         'apispec',
-        'apispec-webframeworks',
+        'apispec-webframeworks @ git+https://git@github.com/marshmallow-code/apispec-webframeworks.git@master#egg=apispec-webframeworks',
         'PyYAML',
         'flask-cors'
     ]

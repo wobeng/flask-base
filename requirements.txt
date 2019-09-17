@@ -3,6 +3,6 @@ marshmallow
 simplejson
 flasgger
 apispec
-apispec-webframeworks
+git+https://git@github.com/marshmallow-code/apispec-webframeworks.git@master
 PyYAML
 flask-cors
