@@ -68,7 +68,7 @@ def generate_swagger(cls):
                     view_func_args[arg]['scope'] = 'global'
 
         for arg, val in {arg: val for arg, val in view_func_args.items() if arg in http_path}.items():
-            spec = find_specs(find_schemas(http_method.title(), arg, cls.schema))
+            spec = find_specs(find_schemas(http_method.title(), cls.schema, path=arg))
             if arg in ['body']:
                 parameter = {
                     'name': arg,

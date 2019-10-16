@@ -71,8 +71,13 @@ def validate_schema(view_func):
             data = incoming_data(arg)
             if arg == 'view_arg' and hasattr(g, 'view_args'):  # check for url processors
                 data.update(g.view_args)
-            schemas = find_schemas(request.method.title(), arg, view_func.view_class.schema)
+            schemas = find_schemas(request.method.title(), view_func.view_class.schema, path=arg)
             g.processed_data[arg] = load_schemas(arg, data, schemas, view_func.view_class.__name__)
+
+        # process post validate
+        for schema in find_schemas(request.method.title(), view_func.view_class.schema):
+            if hasattr(schema, 'post_validate'):
+                g.processed_data = schema.post_validate(g.processed_data)
 
         # pass validated url variable overriding non http_path
         if 'view_arg' in g.processed_data:

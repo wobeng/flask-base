@@ -34,15 +34,16 @@ def function_args(func):
     return response
 
 
-def find_schemas(method, path, schema):
-    path = path.title().replace('_', '')
+def find_schemas(method, schema, path=None):
+    path = path.title().replace('_', '') if path else path
     schemas = []
     try:
-        schemas.append(getattr(schema, path))
+        schemas.append(getattr(schema, path) if path else schema)
     except AttributeError:
         pass
     try:
-        schemas.append(getattr(getattr(schema, method), path))
+        method_cls = getattr(schema, method)
+        schemas.append(getattr(method_cls, path) if path else method_cls)
     except AttributeError:
         if not schemas:
             raise
