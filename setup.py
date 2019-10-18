@@ -17,6 +17,13 @@ setup(
         'apispec',
         'apispec-webframeworks @ git+https://git@github.com/marshmallow-code/apispec-webframeworks.git@master#egg=apispec-webframeworks',
         'PyYAML',
-        'flask-cors'
+        'flask-cors',
+        'bcrypt',
+        'python-dateutil',
+        'phonenumbers',
+        'requests',
+        'validators',
+        'validate_email',
+        'jsonschema==3.0.0a3',
     ]
 )
