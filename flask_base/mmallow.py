@@ -1,4 +1,7 @@
+import json
+import os
 import re
+from datetime import datetime
 from urllib.parse import parse_qs
 
 import bcrypt
@@ -7,15 +10,20 @@ import phonenumbers
 import requests
 import simplejson
 import validators
-from aws_utils.utils import datetime_utc
 from dateutil.rrule import rrulestr
-from flask_base.swagger import mm_plugin
 from jsonschema import Draft7Validator
 from marshmallow import fields, validate
 from more_itertools import unique_everseen
+from pytz import UTC
 from validate_email import validate_email
 
-from ca_base import aws
+from flask_base.swagger import mm_plugin
+
+
+def datetime_utc(dt=None):
+    if not dt:
+        dt = datetime.utcnow()
+    return dt.replace(tzinfo=UTC)
 
 
 def default_error_messages(null=None, validator_failed=None, required=None,
@@ -54,17 +62,17 @@ class Recaptcha(fields.String):
 
     def _deserialize(self, value, attr, obj, **kwargs):
         value = super(Recaptcha, self)._deserialize(value, attr, obj)
-        if aws.var('ENVIRONMENT') == 'develop' and value == aws.var('RECAPTCHA_TEST_VALUE'):
+        if os.environ['ENVIRONMENT'] == 'develop' and value == os.environ['RECAPTCHA_TEST_VALUE']:
             return True
         r = requests.post(
             'https://www.google.com/recaptcha/api/siteverify',
-            data={'secret': aws.var('RECAPTCHA_SECRET'), 'response': value}
+            data={'secret': os.environ['RECAPTCHA_SECRET'], 'response': value}
         ).json()
         if not r.get('success', False):
             self.fail('validator_failed')
         if r.get('action', '') != self.action:
             self.fail('validator_failed')
-        if r.get('score', 0.0) < float(aws.var('RECAPTCHA_SCORE')):
+        if r.get('score', 0.0) < float(os.environ['RECAPTCHA_SCORE']):
             self.fail('validator_failed')
         return r['success']
 
@@ -148,6 +156,30 @@ class JsonSchema(fields.Dict):
             return simplejson.dumps(value)
         except BaseException:
             self.fail('validator_failed')
+
+
+class JsonSchemaData(fields.Dict):
+    def __init__(self, schema, *args, **kwargs):
+        self.schema = schema
+        kwargs.setdefault('error_messages', default_error_messages(validator_failed='FieldJsonSchemaDataTypeException'))
+        super(JsonSchemaData, self).__init__(*args, **kwargs)
+
+    def _deserialize(self, value, attr, obj, **kwargs):
+        value = super(JsonSchemaData, self)._deserialize(value, attr, obj)
+        try:
+            incoming_data = JsonSchemaData.clean_empty(value)
+            response = Draft7Validator(json.loads(self.schema)).is_valid(incoming_data)
+            return response
+        except BaseException:
+            self.fail('validator_failed')
+
+    @staticmethod
+    def clean_empty(d):
+        if not isinstance(d, (dict, list)):
+            return d
+        if isinstance(d, list):
+            return [v for v in (JsonSchemaData.clean_empty(v) for v in d) if v]
+        return {k: v for k, v in ((k, JsonSchemaData.clean_empty(v)) for k, v in d.items()) if v != ''}
 
 
 def _date_time(self, value, attr, obj, validator_failed, date=False):
