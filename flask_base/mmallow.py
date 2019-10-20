@@ -168,9 +168,10 @@ class JsonSchemaData(fields.Dict):
         value = super(JsonSchemaData, self)._deserialize(value, attr, obj)
         try:
             incoming_data = JsonSchemaData.clean_empty(value)
-            response = Draft7Validator(json.loads(self.schema())).is_valid(incoming_data)
-            return response
-        except BaseException:
+            if not Draft7Validator(json.loads(self.schema())).is_valid(incoming_data):
+                raise
+            return value
+        except BaseException as e:
             self.fail('validator_failed')
 
     @staticmethod
