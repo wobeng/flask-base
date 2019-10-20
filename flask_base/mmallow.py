@@ -367,6 +367,12 @@ class Function(fields.Field):
         return data
 
 
+@mm_plugin.map_to_openapi_type('string', None)
+class StringFunction(Function):
+    def __init__(self, *args, **kwargs):
+        super(StringFunction, self).__init__(input_type=str, *args, **kwargs)
+
+
 @mm_plugin.map_to_openapi_type('array', None)
 class ListFunction(Function):
     def __init__(self, *args, **kwargs):
