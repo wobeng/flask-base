@@ -1,4 +1,3 @@
-import json
 import os
 import re
 from datetime import datetime
@@ -156,31 +155,6 @@ class JsonSchema(fields.Dict):
             return simplejson.dumps(value)
         except BaseException:
             self.fail('validator_failed')
-
-
-class JsonSchemaData(fields.Dict):
-    def __init__(self, schema, *args, **kwargs):
-        self.schema = schema
-        kwargs.setdefault('error_messages', default_error_messages(validator_failed='FieldJsonSchemaDataTypeException'))
-        super(JsonSchemaData, self).__init__(*args, **kwargs)
-
-    def _deserialize(self, value, attr, obj, **kwargs):
-        value = super(JsonSchemaData, self)._deserialize(value, attr, obj)
-        try:
-            incoming_data = JsonSchemaData.clean_empty(value)
-            if not Draft7Validator(json.loads(self.schema())).is_valid(incoming_data):
-                raise
-            return value
-        except BaseException as e:
-            self.fail('validator_failed')
-
-    @staticmethod
-    def clean_empty(d):
-        if not isinstance(d, (dict, list)):
-            return d
-        if isinstance(d, list):
-            return [v for v in (JsonSchemaData.clean_empty(v) for v in d) if v]
-        return {k: v for k, v in ((k, JsonSchemaData.clean_empty(v)) for k, v in d.items()) if v != ''}
 
 
 def _date_time(self, value, attr, obj, validator_failed, date=False):
