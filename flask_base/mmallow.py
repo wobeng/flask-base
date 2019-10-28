@@ -317,12 +317,14 @@ class Nested(fields.Nested):
 
 class OneOf(validate.OneOf):
     def __init__(self, *args, **kwargs):
-        super(OneOf, self).__init__(error='FieldValidatorFailedException', *args, **kwargs)
+        kwargs.setdefault('error', 'FieldValidatorFailedException')
+        super(OneOf, self).__init__(*args, **kwargs)
 
 
 class ContainsOnly(validate.ContainsOnly):
     def __init__(self, *args, **kwargs):
-        super(ContainsOnly, self).__init__(error='FieldValidatorFailedException', *args, **kwargs)
+        kwargs.setdefault('error', 'FieldValidatorFailedException')
+        super(ContainsOnly, self).__init__(*args, **kwargs)
 
 
 class Function(fields.Field):
