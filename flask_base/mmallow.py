@@ -266,7 +266,8 @@ class Url(String):
 class Dict(fields.Dict):
     def __init__(self, allow_empty=False, *args, **kwargs):
         self.allow_empty = allow_empty
-        super(Dict, self).__init__(error_messages=default_error_messages(), *args, **kwargs)
+        kwargs.setdefault('error_messages', default_error_messages())
+        super(Dict, self).__init__(*args, **kwargs)
 
     def _deserialize(self, value, attr, data, **kwargs):
         if not isinstance(value, dict):
@@ -283,7 +284,8 @@ class List(fields.List):
     def __init__(self, cls_or_instance, allow_empty=False, remove_duplicates=False, **kwargs):
         self.allow_empty = allow_empty
         self.remove_duplicates = remove_duplicates
-        super(List, self).__init__(cls_or_instance, error_messages=default_error_messages(), **kwargs)
+        kwargs.setdefault('error_messages', default_error_messages())
+        super(List, self).__init__(cls_or_instance, **kwargs)
 
     def _deserialize(self, value, attr, data, **kwargs):
         if not isinstance(value, list):
@@ -301,18 +303,21 @@ class List(fields.List):
 @mm_plugin.map_to_openapi_type('integer', 'int32')
 class Integer(fields.Integer):
     def __init__(self, *args, **kwargs):
-        super(Integer, self).__init__(error_messages=default_error_messages(), *args, **kwargs)
+        kwargs.setdefault('error_messages', default_error_messages())
+        super(Integer, self).__init__(*args, **kwargs)
 
 
 @mm_plugin.map_to_openapi_type('number', 'float')
 class Float(fields.Float):
     def __init__(self, *args, **kwargs):
-        super(Float, self).__init__(error_messages=default_error_messages(), *args, **kwargs)
+        kwargs.setdefault('error_messages', default_error_messages())
+        super(Float, self).__init__(*args, **kwargs)
 
 
 class Nested(fields.Nested):
     def __init__(self, *args, **kwargs):
-        super(Nested, self).__init__(error_messages=default_error_messages(), *args, **kwargs)
+        kwargs.setdefault('error_messages', default_error_messages())
+        super(Nested, self).__init__(*args, **kwargs)
 
 
 class OneOf(validate.OneOf):
