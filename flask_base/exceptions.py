@@ -1,18 +1,27 @@
 class Error(Exception):
-    def __init__(self, message, status_code=400, payload=None):
-        Exception.__init__(self, message)
-        self.payload = payload
+    code = 400
+    msg = 'Something went wrong'
+    error_type = 'ApiException'
+
+    def __init__(self, message=None, status_code=None, payload=None, error_type=None):
+        message = message or self.msg
+        super(Error, self).__init__(message)
+        self.payload = payload or []
         self.message = message
-        self.status_code = status_code
+        self.error_type = error_type or self.error_type
+        self.status_code = status_code or self.code
 
     def to_dict(self):
-        return {
+        output = {
             'error': {
                 'code': self.status_code,
-                'message': self.payload[0]['message'],
-                'errors': self.payload
+                'message': self.message,
+                'error_type': self.error_type
             }
         }
+        if self.payload:
+            output['error']['errors'] = self.payload
+        return output
 
 
 class Schema(Error):
@@ -30,7 +39,7 @@ class Schema(Error):
                 for child_e, messages in parent_e_val.items():
                     for message in messages:
                         self.to_payload(child_e, parent_e, message)
-        Error.__init__(self, 'SchemaFieldsException', 400, self.payload)
+        super(Schema, self).__init__('Request input schema is invalid', 400, self.payload, 'SchemaFieldsException')
 
     def to_payload(self, location, location_id, message):
         self.payload.append(
