@@ -9,7 +9,7 @@ from flask_base.utils import generate_cookie
 
 class Base(MethodView):
     pre_decorators = []
-    cookies_allowed_domains = ''
+    cookies_allowed_domains = 'caseactive.net'
 
     def __init__(self):
         self.cookies = []
