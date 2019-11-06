@@ -1,3 +1,5 @@
+import os
+
 from flask import make_response
 from flask.views import MethodView
 
@@ -9,13 +11,12 @@ from flask_base.utils import generate_cookie
 
 class Base(MethodView):
     pre_decorators = []
-    cookies_allowed_domains = ''
 
     def __init__(self):
         self.cookies = []
 
     def set_cookie(self, name, content='', max_age=0, allowed_domains=None, http_only=True, samesite=True):
-        allowed_domains = allowed_domains or self.cookies_allowed_domains
+        allowed_domains = allowed_domains or os.environ['ALLOWED_DOMAINS']
         self.cookies.append(generate_cookie(name, content, max_age, allowed_domains, http_only, samesite))
 
     def success(self, data=None, msg=None):

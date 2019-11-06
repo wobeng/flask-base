@@ -8,11 +8,17 @@ from flask import Flask, jsonify, request, redirect
 from flask_cors import CORS
 from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_base.exceptions import Error
+import os
 
 
-def init_api(name, title='', uiversion=2, supports_credentials=False, origins='*', flask_vars=None):
+def init_api(name, title='', uiversion=2, supports_credentials=False, origins='*', flask_vars=None, secrets=None):
     # create an application instance.
     app = Flask(name, instance_relative_config=True)
+
+    # load secrets
+    secrets = secrets or {}
+    for key, value in secrets.items():
+        os.environ[key] = value
 
     # init cors
     if origins != '*':
