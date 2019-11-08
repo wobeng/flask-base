@@ -11,15 +11,9 @@ from flask_base.exceptions import Error
 import os
 
 
-def init_api(name, title='', uiversion=2, supports_credentials=False, origins='*', flask_vars=None, secrets=None):
+def init_api(name, title='', uiversion=2, supports_credentials=False, origins='*', flask_vars=None):
     # create an application instance.
     app = Flask(name, instance_relative_config=True)
-
-    # load secrets
-    secrets = secrets or {}
-    for key, value in secrets.items():
-        os.environ[key] = value
-
     # init cors
     if origins != '*':
         if isinstance(origins, str):

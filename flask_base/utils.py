@@ -1,4 +1,5 @@
 import inspect
+import os
 from collections import OrderedDict
 
 from apispec.ext.marshmallow import openapi
@@ -71,3 +72,9 @@ def generate_cookie(name, content='', max_age=0, allowed_domains=None, http_only
         cookie['samesite'] = 'Strict'
 
     return cookie
+
+def load_secret(secrets):
+    # load secrets
+    secrets = secrets or {}
+    for key, value in secrets.items():
+        os.environ[key] = value
