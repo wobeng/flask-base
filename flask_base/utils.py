@@ -73,8 +73,10 @@ def generate_cookie(name, content='', max_age=0, allowed_domains=None, http_only
 
     return cookie
 
+
 def load_secret(secrets):
     # load secrets
     secrets = secrets or {}
     for key, value in secrets.items():
-        os.environ[key] = value
+        if key not in os.environ:
+            os.environ[key] = value

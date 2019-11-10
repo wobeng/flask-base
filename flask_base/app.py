@@ -8,7 +8,6 @@ from flask import Flask, jsonify, request, redirect
 from flask_cors import CORS
 from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_base.exceptions import Error
-import os
 
 
 def init_api(name, title='', uiversion=2, supports_credentials=False, origins='*', flask_vars=None):
