@@ -25,15 +25,14 @@ def datetime_utc(dt=None):
     return dt.replace(tzinfo=UTC)
 
 
-def default_error_messages(null=None, validator_failed=None, required=None,
-                           field_type=None, invalid=None, max_length=None):
+def default_error_messages():
     return dict({
-        'null': null or 'FieldNotNullException',
-        'validator_failed': validator_failed or 'FieldValidatorFailedException',
-        'required': required or 'FieldRequiredException',
-        'field_type': field_type or 'FieldTypeException',
-        'invalid': invalid or 'FieldValidatorFailedException',
-        'max_length': max_length or 'FieldMaxLengthException'
+        'null': os.environ.get('MMALLOW_FIELD_NULL', 'FieldNotNullException'),
+        'validator_failed': os.environ.get('MMALLOW_FIELD_VALIDATOR_FAILED', 'FieldValidatorFailedException'),
+        'required': os.environ.get('MMALLOW_FIELD_REQUIRED', 'FieldRequiredException'),
+        'field_type': os.environ.get('MMALLOW_FIELD_FIELD_TYPE', 'FieldTypeException'),
+        'invalid': os.environ.get('MMALLOW_FIELD_INVALID', 'FieldValidatorFailedException'),
+        'max_length': os.environ.get('MMALLOW_FIELD_MAX_LENGTH', 'FieldMaxLengthException')
     })
 
 
@@ -58,6 +57,8 @@ class Recaptcha(fields.String):
         self.action = action
         kwargs.setdefault('error_messages', default_error_messages())
         super(Recaptcha, self).__init__(*args, **kwargs)
+        self.error_messages['validator_failed'] = os.environ.get('MMALLOW_FIELD_RECAPTCHA',
+                                                                 'FieldRecaptchaTypeException')
 
     def _deserialize(self, value, attr, obj, **kwargs):
         value = super(Recaptcha, self)._deserialize(value, attr, obj)
@@ -81,8 +82,9 @@ class Password(String):
     def __init__(self, *args, **kwargs):
         regex = '^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$'
         self.regex = re.compile(regex, 0) if isinstance(regex, (str, bytes)) else regex
-        kwargs.setdefault('error_messages', default_error_messages(validator_failed='FieldPasswordTypeException'))
         super(Password, self).__init__(min_length=8, *args, **kwargs)
+        self.error_messages['validator_failed'] = os.environ.get('MMALLOW_FIELD_PASSWORD',
+                                                                 'FieldPasswordTypeException')
 
     def _deserialize(self, value, attr, obj, **kwargs):
         value = super(Password, self)._deserialize(value, attr, obj)
@@ -93,8 +95,9 @@ class Password(String):
 
 class Phone(String):
     def __init__(self, *args, **kwargs):
-        kwargs.setdefault('error_messages', default_error_messages(validator_failed='FieldPhoneTypeException'))
         super(Phone, self).__init__(*args, **kwargs)
+        self.error_messages['validator_failed'] = os.environ.get('MMALLOW_FIELD_PHONE',
+                                                                 'FieldPhoneTypeException')
 
     def _deserialize(self, value, attr, obj, **kwargs):
         value = super(Phone, self)._deserialize(value, attr, obj)
@@ -111,9 +114,10 @@ class Phone(String):
 
 class Rrule(String):
     def __init__(self, allow_none=True, *args, **kwargs):
-        kwargs.setdefault('error_messages', default_error_messages(validator_failed='FieldRruleTypeException'))
         kwargs.setdefault('example', 'FREQ=DAILY')
         super(Rrule, self).__init__(allow_none=allow_none, *args, **kwargs)
+        self.error_messages['validator_failed'] = os.environ.get('MMALLOW_FIELD_RRULE',
+                                                                 'FieldRruleTypeException')
 
     def _deserialize(self, value, attr, obj, **kwargs):
         if self.allow_none and value is None:
@@ -127,9 +131,6 @@ class Rrule(String):
 
 
 class ParseQueryString(String):
-    def __init__(self, *args, **kwargs):
-        kwargs.setdefault('error_messages', default_error_messages())
-        super(ParseQueryString, self).__init__(*args, **kwargs)
 
     def _deserialize(self, value, attr, obj, **kwargs):
         value = super(ParseQueryString, self)._deserialize(value, attr, obj)
@@ -142,8 +143,9 @@ class ParseQueryString(String):
 
 class JsonSchema(fields.Dict):
     def __init__(self, *args, **kwargs):
-        kwargs.setdefault('error_messages', default_error_messages(validator_failed='FieldJsonSchemaTypeException'))
         super(JsonSchema, self).__init__(*args, **kwargs)
+        self.error_messages['validator_failed'] = os.environ.get('MMALLOW_FIELD_JSONSCHEMA',
+                                                                 'FieldJsonSchemaTypeException')
 
     def _deserialize(self, value, attr, obj, **kwargs):
         value = super(JsonSchema, self)._deserialize(value, attr, obj)
@@ -194,8 +196,9 @@ def _date_time(self, value, attr, obj, validator_failed, date=False):
 class Date(String):
     def __init__(self, output_string=False, *args, **kwargs):
         self.output_string = output_string
-        kwargs.setdefault('error_messages', default_error_messages(validator_failed='FieldDateTypeException'))
         super(Date, self).__init__(*args, **kwargs)
+        self.error_messages['validator_failed'] = os.environ.get('MMALLOW_FIELD_DATE',
+                                                                 'FieldDateTypeException')
 
     def _deserialize(self, value, attr, obj, **kwargs):
         value = super(Date, self)._deserialize(value, attr, obj)
@@ -206,8 +209,9 @@ class Date(String):
 class DateTime(String):
     def __init__(self, output_string=False, *args, **kwargs):
         self.output_string = output_string
-        kwargs.setdefault('error_messages', default_error_messages(validator_failed='FieldDateTimeTypeException'))
         super(DateTime, self).__init__(*args, **kwargs)
+        self.error_messages['validator_failed'] = os.environ.get('MMALLOW_FIELD_DATETIME',
+                                                                 'FieldDateTimeTypeException')
 
     def _deserialize(self, value, attr, obj, **kwargs):
         value = super(DateTime, self)._deserialize(value, attr, obj)
@@ -217,10 +221,11 @@ class DateTime(String):
 @mm_plugin.map_to_openapi_type('string', 'date-time')
 class FutureDateTime(DateTime):
     def __init__(self, *args, **kwargs):
-        kwargs['error_messages'] = default_error_messages(validator_failed='FieldFutureDateTimeTypeException')
         self.output_string_override = kwargs['output_string']
         kwargs['output_string'] = False
         super(FutureDateTime, self).__init__(*args, **kwargs)
+        self.error_messages['validator_failed'] = os.environ.get('MMALLOW_FIELD_FUTURE_DATETIME',
+                                                                 'FieldFutureDateTimeTypeException')
 
     def _deserialize(self, value, attr, obj, **kwargs):
         future = super(FutureDateTime, self)._deserialize(value, attr, obj)
@@ -235,8 +240,9 @@ class FutureDateTime(DateTime):
 @mm_plugin.map_to_openapi_type('string', 'email')
 class Email(String):
     def __init__(self, *args, **kwargs):
-        kwargs.setdefault('error_messages', default_error_messages(validator_failed='FieldEmailTypeException'))
         super(Email, self).__init__(*args, **kwargs)
+        self.error_messages['validator_failed'] = os.environ.get('MMALLOW_FIELD_EMAIL',
+                                                                 'FieldEmailTypeException')
 
     def _deserialize(self, value, attr, obj, **kwargs):
         value = super(Email, self)._deserialize(value, attr, obj)
@@ -250,8 +256,9 @@ class Email(String):
 @mm_plugin.map_to_openapi_type('string', 'url')
 class Url(String):
     def __init__(self, *args, **kwargs):
-        kwargs.setdefault('error_messages', default_error_messages(validator_failed='FieldUrlTypeException'))
         super(Url, self).__init__(*args, **kwargs)
+        self.error_messages['validator_failed'] = os.environ.get('MMALLOW_FIELD_URL',
+                                                                 'FieldUrlTypeException')
 
     def _deserialize(self, value, attr, obj, **kwargs):
         value = super(Url, self)._deserialize(value, attr, obj)

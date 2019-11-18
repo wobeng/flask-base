@@ -25,6 +25,7 @@ setup(
         'validators',
         'validate_email',
         'jsonschema==3.0.0a3',
-        'pytz'
+        'pytz',
+        'pynamodb @ git+https://github.com/pynamodb/PynamoDB#egg=pynamodb'
     ]
 )
