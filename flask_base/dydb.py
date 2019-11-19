@@ -97,7 +97,7 @@ class DbModel(Model):
 
     @classmethod
     def get(cls, hash_key=None, range_key=None, consistent_read=False, attributes_to_get=None):
-        hash_key = hash_key or os.environ.get('HASH_KEY', '')
+        hash_key = hash_key or os.environ.get('HASH_KEY', None)
         item = super(DbModel, cls).get(hash_key, range_key, consistent_read, attributes_to_get)
         if getattr(item, 'purge', False):
             raise DoesNotExist
@@ -203,7 +203,7 @@ class DbModel(Model):
               page_size=None,
               rate_limit=None,
               **filters):
-        hash_key = hash_key or os.environ.get('HASH_KEY', '')
+        hash_key = hash_key or os.environ.get('HASH_KEY', None)
         _purge = getattr(cls, 'purge', False)
         if _purge:
             cls.add_db_conditions((_purge.does_not_exist()) | (_purge == False))
