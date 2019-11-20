@@ -61,7 +61,7 @@ class DbModel(Model):
 
     def __init__(self, hash_key=None, range_key=None, **attrs):
         if not hash_key:
-            hash_key = os.environ.get('HASH_KEY', '')
+            hash_key = os.environ.get('HASH_KEY', None)
         super(DbModel, self).__init__(hash_key, range_key, **attrs)
         self._hash_key = getattr(self.__class__, self._hash_keyname)
         self._purge = getattr(self.__class__, 'purge', False)
