@@ -10,6 +10,7 @@ from functools import reduce
 from apispec.ext.marshmallow import openapi
 from flask import request
 from pytz import UTC
+from simplejson import loads
 
 http_path = ['path', 'body', 'query', 'header', 'view_arg']
 http_methods = ['get', 'head', 'post', 'put', 'delete', 'connect', 'options', 'trace', 'patch']
@@ -80,14 +81,6 @@ def generate_cookie(name, content='', max_age=0, allowed_domains=None, http_only
     return cookie
 
 
-def load_secret(secrets):
-    # load secrets
-    secrets = secrets or {}
-    for key, value in secrets.items():
-        if key not in os.environ:
-            os.environ[key] = value
-
-
 def datetime_utc(dt=None):
     if not dt:
         dt = datetime.utcnow()
@@ -143,3 +136,14 @@ class FormatData:
             except KeyError as e:
                 continue
         return self.item
+
+
+def load_secret(secrets):
+    if isinstance(secrets, str):
+        secrets = loads(secrets)
+    # load secrets
+    secrets = secrets or {}
+    for key, value in secrets.items():
+        if key not in os.environ:
+            os.environ[key] = value
+    return secrets

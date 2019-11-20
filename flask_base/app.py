@@ -23,7 +23,8 @@ def init_api(name, title='', uiversion=2, supports_credentials=False, origins='*
     flask_vars = flask_vars or {}
     translate = {'True': True, 'False': False, 'None': None}
     for k, v in flask_vars.items():
-        app.config[k] = translate.get(v, v)
+        if k.startswith('FLASK_'):
+            app.config[k.split('_')[-1]] = translate.get(v, v)
 
     # handle error
     @app.errorhandler(Error)
