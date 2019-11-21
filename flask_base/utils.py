@@ -1,16 +1,8 @@
 import inspect
-import operator
-import os
-import random
-import uuid
 from collections import OrderedDict
-from datetime import datetime
-from functools import reduce
 
 from apispec.ext.marshmallow import openapi
 from flask import request
-from pytz import UTC
-from simplejson import loads
 
 http_path = ['path', 'body', 'query', 'header', 'view_arg']
 http_methods = ['get', 'head', 'post', 'put', 'delete', 'connect', 'options', 'trace', 'patch']
@@ -79,71 +71,3 @@ def generate_cookie(name, content='', max_age=0, allowed_domains=None, http_only
         cookie['samesite'] = 'Strict'
 
     return cookie
-
-
-def datetime_utc(dt=None):
-    if not dt:
-        dt = datetime.utcnow()
-    return dt.replace(tzinfo=UTC)
-
-
-def date_id(prefix='', suffix=None):
-    def call(_prefix=prefix, _suffix=suffix):
-        _suffix = datetime_utc().replace(tzinfo=None).isoformat().replace('.', ':')
-        _suffix = _suffix + '_' + str(uuid.uuid4())
-        _suffix = _suffix or _suffix
-        if _prefix:
-            _prefix = _prefix + '::'
-        return _prefix + _suffix
-
-    return call
-
-
-def pin_generator():
-    return random.randint(100000, 999999)
-
-
-class FormatData:
-    def __init__(self, item):
-        self.output = {}
-        self.item = dict(item)
-
-    @staticmethod
-    def get_by_path(item, path_list):
-        return reduce(operator.getitem, path_list, item)
-
-    @staticmethod
-    def set_by_path(item, path_list, value):
-        FormatData.get_by_path(item, path_list[:-1])[path_list[-1]] = value
-
-    @staticmethod
-    def delete_in_dict(item, path_list):
-        del FormatData.get_by_path(item, path_list[:-1])[path_list[-1]]
-
-    def inc(self, keys):
-        for k in keys:
-            try:
-                value = self.get_by_path(self.item, k.split('.'))
-                FormatData.set_by_path(self.output, k.split('.'), value)
-            except KeyError as e:
-                continue
-        return self.output
-
-    def exc(self, keys):
-        for k in keys:
-            try:
-                FormatData.delete_in_dict(self.item, k.split('.'))
-            except KeyError as e:
-                continue
-        return self.item
-
-
-def load_secret(secrets):
-    if isinstance(secrets, str):
-        secrets = loads(secrets)
-    # load secrets
-    secrets = secrets or {}
-    for key, value in secrets.items():
-        if key not in os.environ:
-            os.environ[key] = value
-    return secrets
