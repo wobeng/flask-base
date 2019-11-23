@@ -4,7 +4,7 @@ from flask_base.utils import OpenAPIConverter2
 
 openapi.OpenAPIConverter = OpenAPIConverter2
 from flasgger import Swagger, LazyString, LazyJSONEncoder
-from flask import Flask, jsonify, request, redirect
+from flask import Flask, request, redirect
 from flask_cors import CORS
 from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_base.exceptions import Error
@@ -29,9 +29,7 @@ def init_api(name, title='', uiversion=2, supports_credentials=False, origins='*
     # handle error
     @app.errorhandler(Error)
     def handle_client_error(error):
-        response = jsonify(error.to_dict())
-        response.status_code = error.status_code
-        return response
+        return error.response()
 
     # init swagger
     app.config['SWAGGER'] = dict(title=title, uiversion=uiversion)

@@ -1,3 +1,6 @@
+from flask import jsonify
+
+
 class Error(Exception):
     code = 400
     msg = 'Something went wrong'
@@ -22,6 +25,11 @@ class Error(Exception):
         if self.payload:
             output['error']['errors'] = self.payload
         return output
+
+    def response(self):
+        response = jsonify(self.to_dict())
+        response.status_code = self.status_code
+        return response
 
 
 class Schema(Error):
