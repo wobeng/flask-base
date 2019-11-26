@@ -86,7 +86,7 @@ class Recaptcha(fields.String):
 
     def _deserialize(self, value, attr, obj, **kwargs):
         value = super(Recaptcha, self)._deserialize(value, attr, obj)
-        if os.environ['ENVIRONMENT'] == 'develop' and value == os.environ['RECAPTCHA_TEST_VALUE']:
+        if value == os.environ['RECAPTCHA_TEST_VALUE']:
             return True
         r = requests.post(
             'https://www.google.com/recaptcha/api/siteverify',
