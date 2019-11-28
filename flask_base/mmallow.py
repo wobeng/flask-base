@@ -361,10 +361,13 @@ class Function(fields.Field):
     def _deserialize(self, value, attr, obj, **kwargs):
         if not isinstance(value, self.input_type):
             self.fail('validator_failed')
-        data = self.deserialize_func(value, **self.func_kwargs)
-        if not data:
-            self.fail('validator_failed')
-        return data
+        try:
+            data = self.deserialize_func(value, **self.func_kwargs)
+            if data:
+                return data
+        except BaseException:
+            pass
+        self.fail('validator_failed')
 
 
 @mm_plugin.map_to_openapi_type('string', None)
