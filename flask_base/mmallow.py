@@ -205,7 +205,7 @@ def _date_time(self, value, attr, obj, validator_failed, date=False):
                 self.error_messages['validator_failed'] = validator_failed
                 raise BaseException
         # return string if preferred
-        if self.output_string:
+        if date:
             return dt.isoformat()
         return dt
     except BaseException:
@@ -214,8 +214,7 @@ def _date_time(self, value, attr, obj, validator_failed, date=False):
 
 @mm_plugin.map_to_openapi_type('string', 'date')
 class Date(String):
-    def __init__(self, output_string=False, *args, **kwargs):
-        self.output_string = output_string
+    def __init__(self, *args, **kwargs):
         super(Date, self).__init__(*args, **kwargs)
         self.error_messages['validator_failed'] = error_msg(FIELD_DATE)
 
@@ -226,8 +225,7 @@ class Date(String):
 
 @mm_plugin.map_to_openapi_type('string', 'date-time')
 class DateTime(String):
-    def __init__(self, output_string=False, *args, **kwargs):
-        self.output_string = output_string
+    def __init__(self, *args, **kwargs):
         super(DateTime, self).__init__(*args, **kwargs)
         self.error_messages['validator_failed'] = error_msg(FIELD_DATETIME)
 
@@ -239,8 +237,6 @@ class DateTime(String):
 @mm_plugin.map_to_openapi_type('string', 'date-time')
 class FutureDateTime(DateTime):
     def __init__(self, *args, **kwargs):
-        self.output_string_override = kwargs['output_string']
-        kwargs['output_string'] = False
         super(FutureDateTime, self).__init__(*args, **kwargs)
         self.error_messages['validator_failed'] = error_msg(FIELD_FUTURE_DATETIME)
 
@@ -249,8 +245,6 @@ class FutureDateTime(DateTime):
         present = datetime_utc().replace(microsecond=0)
         if present > future:
             self.fail('validator_failed')
-        if self.output_string_override:
-            return future.isoformat()
         return future
 
 
