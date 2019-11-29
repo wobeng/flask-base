@@ -365,7 +365,7 @@ class Function(fields.Field):
             data = self.deserialize_func(value, **self.func_kwargs)
             if data:
                 return data
-        except BaseException:
+        except BaseException as e:
             pass
         self.fail('validator_failed')
 
