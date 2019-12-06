@@ -1,5 +1,6 @@
 import os
 import re
+import traceback
 from datetime import datetime
 from urllib.parse import parse_qs
 
@@ -367,7 +368,7 @@ class Function(fields.Field):
                 return data
         except BaseException as e:
             if os.environ['ENVIRONMENT'] == 'develop':
-                print(e)
+                traceback.print_exc()
         self.fail('validator_failed')
 
 
