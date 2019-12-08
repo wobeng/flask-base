@@ -25,4 +25,3 @@ class Api(Base):
     }
 
 
-from tests.app.api_v1.api import case
