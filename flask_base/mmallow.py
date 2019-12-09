@@ -350,18 +350,22 @@ class ContainsOnly(validate.ContainsOnly):
 
 
 class Function(fields.Field):
-    def __init__(self, serialize=None, deserialize=None, input_type=None, func_kwargs=None, *args, **kwargs):
+    def __init__(self, serialize=None, deserialize=None, input_type=None, func_kwargs=None, allow_empty=False, *args,
+                 **kwargs):
 
         self.func_kwargs = func_kwargs or dict()
         self.serialize_func = serialize
         self.deserialize_func = deserialize
         self.input_type = input_type or str
+        self.allow_empty = allow_empty
         kwargs.setdefault('error_messages', default_error_messages())
         super(Function, self).__init__(*args, **kwargs)
 
     def _deserialize(self, value, attr, obj, **kwargs):
         if not isinstance(value, self.input_type):
             self.fail('validator_failed')
+        if self.allow_empty and not value:
+            return value
         try:
             data = self.deserialize_func(value, **self.func_kwargs)
             if data:
