@@ -367,6 +367,7 @@ class Function(fields.Field):
             if data:
                 return data
         except BaseException as e:
+            print(e)
             if os.environ['ENVIRONMENT'] == 'develop':
                 traceback.print_exc()
         self.fail('validator_failed')
