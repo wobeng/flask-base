@@ -36,6 +36,7 @@ FIELD_FUTURE_DATETIME = 'FieldFutureDateTimeTypeException', 'Future datetime is 
 FIELD_START_END_DATE = 'StartEndDateException', 'Start date is invalid. Example: mm/dd/yyyy.'
 FIELD_START_END_DATETIME = 'StartEndDateException', 'Start date is invalid. Example: mm/dd/yyyy-00:00:00.'
 FIELD_EMAIL = 'FieldEmailTypeException', 'Email is invalid. Example: username@example.com.'
+FIELD_EMAIL_EXIST = 'FieldEmailExistException', 'Account email already exist.'
 FIELD_URL = 'FieldUrlTypeException', 'Url is is invalid. Example: http://example.com'
 
 
@@ -254,6 +255,7 @@ class Email(String):
     def __init__(self, *args, **kwargs):
         super(Email, self).__init__(*args, **kwargs)
         self.error_messages['validator_failed'] = error_msg(FIELD_EMAIL)
+        self.error_messages['item_exist'] = error_msg(FIELD_EMAIL_EXIST)
 
     def _deserialize(self, value, attr, obj, **kwargs):
         value = super(Email, self)._deserialize(value, attr, obj)
