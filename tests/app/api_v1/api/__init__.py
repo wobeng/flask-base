@@ -23,5 +23,3 @@ class Api(Base):
         'header': {'default': None, 'type': dict},
         'view_arg': {'default': None, 'type': dict}
     }
-
-
