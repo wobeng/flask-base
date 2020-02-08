@@ -107,7 +107,7 @@ class Password(String):
     def __init__(self, *args, **kwargs):
         regex = '^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$'
         self.regex = re.compile(regex, 0) if isinstance(regex, (str, bytes)) else regex
-        super(Password, self).__init__(min_length=8, *args, **kwargs)
+        super(Password, self).__init__(*args, **kwargs)
         self.error_messages['validator_failed'] = error_msg(FIELD_PASSWORD)
 
     def _deserialize(self, value, attr, obj, **kwargs):
@@ -259,7 +259,7 @@ class Email(String):
         value = super(Email, self)._deserialize(value, attr, obj)
         if not self.min_length and value == '':
             return value
-        if not validate_email(value):
+        if '@' not in value or '.' not in value or not validate_email(value):
             self.fail('validator_failed')
         return value
 
@@ -371,7 +371,6 @@ class Function(fields.Field):
             if data:
                 return data
         except BaseException as e:
-            print(e)
             if os.environ['ENVIRONMENT'] == 'develop':
                 traceback.print_exc()
         self.fail('validator_failed')
