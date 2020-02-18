@@ -44,22 +44,23 @@ class Schema(Error):
                 for message in parent_e_val:
                     self.to_payload(parent_e, 0, message)
             else:
-                for child_e, messages in parent_e_val.items():
-                    for message in messages:
-                        self.to_payload(child_e, parent_e, message)
+                for child_e, fields in parent_e_val.items():
+                    for field, message in fields.items():
+                        self.to_payload(field, child_e, message[0], parent=parent_e)
         super(Schema, self).__init__('Request input schema is invalid', 400, self.payload, 'SchemaFieldsException')
 
-    def to_payload(self, location, location_id, message):
-        self.payload.append(
-            {
-                'domain': self.domain.lower(),
-                'locationType': self.__class__.__name__.lower(),
-                'location': location,
-                'locationId': location_id,
-                "reason": message,
-                'message': message
-            }
-        )
+    def to_payload(self, location, location_id, message, parent=None):
+        error = {
+            'domain': self.domain.lower(),
+            'locationType': self.__class__.__name__.lower(),
+            'location': location,
+            'locationId': location_id,
+            "reason": message,
+            'message': message
+        }
+        if parent:
+            error['parent'] = parent
+        self.payload.append(error)
 
 
 class Header(Schema):
