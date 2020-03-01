@@ -45,8 +45,11 @@ class Schema(Error):
                     self.to_payload(parent_e, 0, message)
             else:
                 for child_e, fields in parent_e_val.items():
-                    for field, message in fields.items():
-                        self.to_payload(field, child_e, message[0], parent=parent_e)
+                    if isinstance(fields,dict):
+                        for field, message in fields.items():
+                            self.to_payload(field, child_e, message[0], parent=parent_e)
+                    else:
+                        self.to_payload(child_e, 0,  fields[0], parent=parent_e)
         super(Schema, self).__init__('Request input schema is invalid', 400, self.payload, 'SchemaFieldsException')
 
     def to_payload(self, location, location_id, message, parent=None):
