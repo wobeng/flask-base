@@ -136,7 +136,7 @@ class Phone(String):
 
 
 class Rrule(String):
-    def __init__(self, allow_none=True, *args, **kwargs):
+    def __init__(self, allow_none=False, *args, **kwargs):
         kwargs.setdefault('example', 'FREQ=DAILY')
         super(Rrule, self).__init__(allow_none=allow_none, *args, **kwargs)
         self.error_messages['validator_failed'] = error_msg(FIELD_RRULE)
