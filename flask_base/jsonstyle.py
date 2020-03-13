@@ -2,9 +2,10 @@ import json
 from collections import OrderedDict
 from urllib.parse import urlencode
 
-import simplejson
 from flask import request, g
 from werkzeug.urls import iri_to_uri
+
+from py_tools.format import dumps
 
 
 class GoogleJsonStyle:
@@ -76,7 +77,7 @@ class GoogleJsonStyle:
         body = OrderedDict(body)
         if 'items' in body:
             body['items'] = body.pop('items')
-        body = simplejson.dumps({'data': body}, indent=3)
+        body = dumps({'data': body}, indent=3)
         if request.args.get('callback') and request.method == 'GET':
             body = '{}({});'.format(request.args.get('callback'), body)
         return body

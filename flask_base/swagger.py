@@ -8,6 +8,7 @@ from apispec.ext.marshmallow import MarshmallowPlugin
 from apispec_webframeworks.flask import FlaskPlugin
 
 from flask_base.utils import function_args, http_path, find_schemas, http_methods
+from py_tools.format import dumps, loads
 
 mm_plugin = MarshmallowPlugin()
 flask_plugin = FlaskPlugin()
@@ -39,7 +40,7 @@ def generate_swagger(cls):
         new_spec.title = class_name
         new_spec.version = '1.0.0'
         new_spec.components.schema(class_name, schema=schema)
-        return simplejson.loads(simplejson.dumps(new_spec.to_dict()['definitions']))
+        return loads(dumps(new_spec.to_dict()['definitions']))
 
     def find_specs(schemas):
         """Generate apispec for parent and child schema"""

@@ -8,7 +8,6 @@ import bcrypt
 import dateutil.parser
 import phonenumbers
 import requests
-import simplejson
 import validators
 from dateutil.rrule import rrulestr
 from jsonschema import Draft7Validator
@@ -18,6 +17,7 @@ from pytz import UTC
 from validate_email import validate_email
 
 from flask_base.swagger import mm_plugin
+from py_tools.format import dumps
 
 FIELD_NULL = 'FieldNotNullException', 'This field cannot be empty'
 FIELD_VALIDATOR_FAILED = 'FieldValidatorFailedException', 'This field is invalid'
@@ -175,7 +175,7 @@ class JsonSchema(fields.Dict):
                 raise BaseException
             value['$schema'] = 'http://json-schema.org/schema#'
             Draft7Validator.check_schema(value)
-            return simplejson.dumps(value)
+            return dumps(value)
         except BaseException:
             self.fail('validator_failed')
 

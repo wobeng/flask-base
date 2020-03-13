@@ -6,6 +6,7 @@
         <serverdata>
           <mappings>
             <mapping deploy="/flask-base" local="$PROJECT_DIR$" web="/" />
+            <mapping deploy="/py-tools" local="$PROJECT_DIR$/../py-tools" web="/" />
           </mappings>
         </serverdata>
       </paths>
