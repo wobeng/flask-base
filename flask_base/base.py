@@ -3,6 +3,7 @@ import os
 from flask import make_response
 from flask.views import MethodView
 
+from flask_base.exceptions import Error
 from flask_base.jsonstyle import GoogleJsonStyle
 from flask_base.schema import validate_schema
 from flask_base.swagger import generate_swagger
@@ -27,6 +28,10 @@ class Base(MethodView):
         for cookie in self.cookies:
             response.set_cookie(**cookie)
         return response
+
+    @staticmethod
+    def fail(msg, status_code=400):
+        return Error(msg, status_code).response()
 
     @classmethod
     def as_view(cls, name, *class_args, **class_kwargs):
