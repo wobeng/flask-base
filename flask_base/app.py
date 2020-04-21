@@ -10,7 +10,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_base.exceptions import Error
 
 
-def init_api(name, title='', uiversion=2, supports_credentials=False, origins='*', flask_vars=None):
+def init_api(name, title='', uiversion=2, supports_credentials=False, origins='*', flask_vars=None, index_docs=True):
     # create an application instance.
     app = Flask(name, instance_relative_config=True)
     # init cors
@@ -40,9 +40,10 @@ def init_api(name, title='', uiversion=2, supports_credentials=False, origins='*
     )
     Swagger(app, template=template)
 
-    @app.route('/')
-    def index():
-        return redirect('/apidocs')
+    if index_docs:
+        @app.route('/')
+        def index():
+            return redirect('/apidocs')
 
     app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
     return app
