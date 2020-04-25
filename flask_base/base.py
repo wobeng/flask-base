@@ -21,6 +21,8 @@ class Base(MethodView):
         self.cookies.append(generate_cookie(name, content, max_age, allowed_domains, http_only, samesite))
 
     def success(self, data=None, msg=None):
+        if isinstance(data, list):
+            data = {'Items': data}
         style = GoogleJsonStyle(self, data, msg)
         response = make_response(style.body())
         response.status_code = style.status_code()
