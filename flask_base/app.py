@@ -27,7 +27,7 @@ def init_api(name, title='', uiversion=2, supports_credentials=False, origins='*
     app = Flask(name, instance_relative_config=True)
     # init reserve proxy
     app.wsgi_app = ProxyFix(app.wsgi_app)
-    app.wsgi_app = CloudfrontProxy(app.wsgi_app)
+    CloudfrontProxy(app)
 
     # init cors
     if origins != '*':
