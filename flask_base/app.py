@@ -6,7 +6,6 @@ openapi.OpenAPIConverter = OpenAPIConverter2
 from flasgger import Swagger, LazyString, LazyJSONEncoder
 from flask import Flask, request, redirect
 from flask_cors import CORS
-from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_base.exceptions import Error
 
 
@@ -26,8 +25,7 @@ def init_api(name, title='', uiversion=2, supports_credentials=False, origins='*
     # create an application instance.
     app = Flask(name, instance_relative_config=True)
     # init reserve proxy
-    app.wsgi_app = ProxyFix(app.wsgi_app)
-    CloudfrontProxy(app)
+    app.wsgi_app = CloudfrontProxy(app.wsgi_app)
 
     # init cors
     if origins != '*':
