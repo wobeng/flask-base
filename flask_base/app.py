@@ -10,9 +10,25 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_base.exceptions import Error
 
 
+class CloudfrontProxy(object):
+    """This middleware sets the proto scheme based on cloudfront header"""
+
+    def __init__(self, app):
+        self.app = app
+
+    def __call__(self, environ, start_response):
+        if 'HTTP_CLOUDFRONT_FORWARDED_PROTO' in environ:
+            environ['wsgi.url_scheme'] = environ['HTTP_CLOUDFRONT_FORWARDED_PROTO']
+        return self.app(environ, start_response)
+
+
 def init_api(name, title='', uiversion=2, supports_credentials=False, origins='*', flask_vars=None, index_docs=True):
     # create an application instance.
     app = Flask(name, instance_relative_config=True)
+    # init reserve proxy
+    app.wsgi_app = ProxyFix(app.wsgi_app)
+    app.wsgi_app = CloudfrontProxy(app.wsgi_app)
+
     # init cors
     if origins != '*':
         if isinstance(origins, str):
@@ -44,6 +60,4 @@ def init_api(name, title='', uiversion=2, supports_credentials=False, origins='*
         @app.route('/')
         def index():
             return redirect('/apidocs')
-
-    app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
     return app

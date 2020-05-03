@@ -47,7 +47,7 @@ def datetime_utc(dt=None):
 
 
 def error_msg(field):
-    if os.environ['MMALLOW_ERROR_EXPAND'] == 'true':
+    if os.environ.get('MMALLOW_ERROR_EXPAND', 'true') == 'true':
         return field[1]
     return field[0]
 
