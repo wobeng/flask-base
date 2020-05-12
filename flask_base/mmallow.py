@@ -15,7 +15,7 @@ from jsonschema import Draft7Validator
 from marshmallow import fields, validate
 from more_itertools import unique_everseen
 from pytz import UTC
-from validate_email import validate_email
+from validate_email import validate_email as validate_email_func
 
 from flask_base.swagger import mm_plugin
 from py_tools.format import dumps
@@ -38,6 +38,7 @@ FIELD_START_END_DATE = 'StartEndDateException', 'Start date is invalid. Example:
 FIELD_START_END_DATETIME = 'StartEndDateException', 'Start date is invalid. Example: mm/dd/yyyy-00:00:00.'
 FIELD_EMAIL = 'FieldEmailTypeException', 'Email is invalid. Example: username@example.com.'
 FIELD_URL = 'FieldUrlTypeException', 'Url is is invalid. Example: http://example.com'
+FIELD_USERNAME = 'FieldUsernameTypeException', 'Username is invalid. Example: username@example.com or +12035556677.'
 
 
 def datetime_utc(dt=None):
@@ -50,6 +51,59 @@ def error_msg(field):
     if os.environ.get('MMALLOW_ERROR_EXPAND', 'true') == 'true':
         return field[1]
     return field[0]
+
+
+def validate_email(value, min_length=None):
+    if not min_length and value == '':
+        return value
+    if '@' not in value or '.' not in value or not validate_email_func(value):
+        return
+    return value
+
+
+def validate_phone(value, min_length=None):
+    if not min_length and value == '':
+        return value
+    try:
+        input_number = phonenumbers.parse(value)
+        if not (phonenumbers.is_valid_number(input_number)):
+            return
+        return phonenumbers.format_number(input_number, phonenumbers.PhoneNumberFormat.E164)
+    except BaseException:
+        return
+
+
+def _date_time(self, value, attr, obj, validator_failed, date=False):
+    if not self.min_length and value == '':
+        return value
+    try:
+        # convert to datetime
+        dt = dateutil.parser.parse(value).replace(microsecond=0)
+        if date:
+            dt = dt.date()
+        # compare start and end date if its duration
+        attr = attr or ''
+        if attr and attr.startswith('start_') or attr.startswith('end_'):
+            # set dates
+            duration = dict()
+            duration[attr] = dt
+            other_date = 'end_date' if attr.startswith('start_') else 'start_date'
+            duration[other_date] = dateutil.parser.parse(obj[other_date])
+            if date:
+                duration[other_date] = duration[other_date].date()
+            # get dates
+            start_date = duration.get('start_date', duration.get('end_date'))
+            end_date = duration.get('end_date', duration.get('start_date'))
+            # compare dates
+            if start_date > end_date:
+                self.error_messages['validator_failed'] = validator_failed
+                raise BaseException
+        # return string if preferred
+        if date:
+            return dt.isoformat()
+        return dt
+    except BaseException:
+        self.fail('validator_failed')
 
 
 def default_error_messages():
@@ -125,15 +179,10 @@ class Phone(String):
 
     def _deserialize(self, value, attr, obj, **kwargs):
         value = super(Phone, self)._deserialize(value, attr, obj)
-        if not self.min_length and value == '':
-            return value
-        try:
-            input_number = phonenumbers.parse(value)
-            if not (phonenumbers.is_valid_number(input_number)):
-                self.fail('validator_failed')
-            return phonenumbers.format_number(input_number, phonenumbers.PhoneNumberFormat.E164)
-        except BaseException:
+        output = validate_phone(value, self.min_length)
+        if not output:
             self.fail('validator_failed')
+        return output
 
 
 class Rrule(String):
@@ -181,39 +230,6 @@ class JsonSchema(fields.Dict):
             self.fail('validator_failed')
 
 
-def _date_time(self, value, attr, obj, validator_failed, date=False):
-    if not self.min_length and value == '':
-        return value
-    try:
-        # convert to datetime
-        dt = dateutil.parser.parse(value).replace(microsecond=0)
-        if date:
-            dt = dt.date()
-        # compare start and end date if its duration
-        attr = attr or ''
-        if attr and attr.startswith('start_') or attr.startswith('end_'):
-            # set dates
-            duration = dict()
-            duration[attr] = dt
-            other_date = 'end_date' if attr.startswith('start_') else 'start_date'
-            duration[other_date] = dateutil.parser.parse(obj[other_date])
-            if date:
-                duration[other_date] = duration[other_date].date()
-            # get dates
-            start_date = duration.get('start_date', duration.get('end_date'))
-            end_date = duration.get('end_date', duration.get('start_date'))
-            # compare dates
-            if start_date > end_date:
-                self.error_messages['validator_failed'] = validator_failed
-                raise BaseException
-        # return string if preferred
-        if date:
-            return dt.isoformat()
-        return dt
-    except BaseException:
-        self.fail('validator_failed')
-
-
 @mm_plugin.map_to_openapi_type('string', 'date')
 class Date(String):
     def __init__(self, *args, **kwargs):
@@ -258,11 +274,10 @@ class Email(String):
 
     def _deserialize(self, value, attr, obj, **kwargs):
         value = super(Email, self)._deserialize(value, attr, obj)
-        if not self.min_length and value == '':
-            return value
-        if '@' not in value or '.' not in value or not validate_email(value):
+        output = validate_email(value, min_length=None)
+        if not output:
             self.fail('validator_failed')
-        return value
+        return output
 
 
 @mm_plugin.map_to_openapi_type('string', 'url')
@@ -295,6 +310,30 @@ class Dict(fields.Dict):
         if not value:
             self.fail('validator_failed')
         return super(Dict, self)._deserialize(value, attr, data)
+
+
+class Username(String):
+    def __init__(self, *args, deserialize=None, **kwargs):
+        super(Username, self).__init__(*args, **kwargs)
+        self.deserialize_func = deserialize
+        self.error_messages['validator_failed'] = error_msg(FIELD_USERNAME)
+
+    def _deserialize(self, value, attr, obj, **kwargs):
+        output = None
+        value = super(Username, self)._deserialize(value, attr, obj)
+        if '+' in value:
+            output = validate_phone(value, self.min_length)
+        elif '@' in value and '.' in value:
+            output = validate_email(value, self.min_length)
+        if output and self.deserialize_func:
+            try:
+                output = self.deserialize_func(value)
+            except BaseException as e:
+                if os.environ['ENVIRONMENT'] == 'develop':
+                    traceback.print_exc()
+        if not output:
+            self.fail('validator_failed')
+        return output
 
 
 @mm_plugin.map_to_openapi_type('array', None)
