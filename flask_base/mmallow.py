@@ -331,6 +331,7 @@ class Username(String):
             except BaseException as e:
                 if os.environ['ENVIRONMENT'] == 'develop':
                     traceback.print_exc()
+                self.fail('validator_failed')
         if not output:
             self.fail('validator_failed')
         return output
