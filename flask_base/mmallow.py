@@ -323,8 +323,10 @@ class Username(String):
         value = super(Username, self)._deserialize(value, attr, obj)
         if '+' in value:
             output = validate_phone(value, self.min_length)
+            self.error_messages['validator_failed'] = error_msg(FIELD_PHONE)
         elif '@' in value and '.' in value:
             output = validate_email(value, self.min_length)
+            self.error_messages['validator_failed'] = error_msg(FIELD_EMAIL)
         if output and self.deserialize_func:
             try:
                 output = self.deserialize_func(value)
