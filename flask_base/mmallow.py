@@ -73,7 +73,7 @@ def validate_phone(value, min_length=None):
         return
 
 
-def _date_time(self, value, attr, obj, validator_failed, date=False, iso_format =False):
+def _date_time(self, value, attr, obj, validator_failed, date=False, iso_format=False):
     if not self.min_length and value == '':
         return value
     try:
@@ -243,14 +243,14 @@ class Date(String):
 
 @mm_plugin.map_to_openapi_type('string', 'date-time')
 class DateTime(String):
-    def __init__(self,  iso_format=False,*args, **kwargs):
+    def __init__(self, iso_format=False, *args, **kwargs):
         super(DateTime, self).__init__(*args, **kwargs)
         self.iso_format = iso_format
         self.error_messages['validator_failed'] = error_msg(FIELD_DATETIME)
 
     def _deserialize(self, value, attr, obj, **kwargs):
         value = super(DateTime, self)._deserialize(value, attr, obj)
-        return _date_time(self, value, attr, obj, error_msg(FIELD_START_END_DATETIME),iso_format=self.iso_format )
+        return _date_time(self, value, attr, obj, error_msg(FIELD_START_END_DATETIME), iso_format=self.iso_format)
 
 
 @mm_plugin.map_to_openapi_type('string', 'date-time')

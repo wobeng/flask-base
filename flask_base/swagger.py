@@ -1,7 +1,6 @@
 from collections import Mapping
 from copy import deepcopy
 
-import simplejson
 import yaml
 from apispec import APISpec
 from apispec.ext.marshmallow import MarshmallowPlugin
