@@ -342,7 +342,7 @@ class Username(String):
 
 @mm_plugin.map_to_openapi_type('array', None)
 class List(fields.List):
-    def __init__(self, cls_or_instance, allow_empty=False, remove_duplicates=False, post_validate=None,**kwargs):
+    def __init__(self, cls_or_instance, allow_empty=False, remove_duplicates=False, post_validate=None, **kwargs):
         self.allow_empty = allow_empty
         self.remove_duplicates = remove_duplicates
         self.post_validate = post_validate
@@ -350,10 +350,9 @@ class List(fields.List):
         super(List, self).__init__(cls_or_instance, **kwargs)
 
     def _deserialize(self, value, attr, data, **kwargs):
-        if not isinstance(value, list):
+        if isinstance(value, str):
             value = value.split(',')
-        if not isinstance(value, list):
-            self.fail('validator_failed')
+        value = list(value)
         if self.allow_empty and not value:
             return value
         if not value:
@@ -365,6 +364,7 @@ class List(fields.List):
                 if not value:
                     self.fail('validator_failed')
             except BaseException as e:
+                print(e)
                 if os.environ['ENVIRONMENT'] == 'develop':
                     traceback.print_exc()
         return list(unique_everseen(value)) if self.remove_duplicates else value
@@ -424,6 +424,7 @@ class Function(fields.Field):
             if data:
                 return data
         except BaseException as e:
+            print(e)
             if os.environ['ENVIRONMENT'] == 'develop':
                 traceback.print_exc()
         self.fail('validator_failed')
