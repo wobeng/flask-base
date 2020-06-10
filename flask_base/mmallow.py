@@ -118,7 +118,7 @@ def default_error_messages():
 
 
 class String(fields.String):
-    def __init__(self, min_length=1, max_length=5000, replace_space=False, *args, **kwargs):
+    def __init__(self, min_length=1, max_length=20000, replace_space=False, *args, **kwargs):
         self.min_length = min_length
         self.max_length = max_length
         self.replace_space = replace_space
@@ -331,7 +331,7 @@ class Username(String):
         if output and self.deserialize_func:
             try:
                 output = self.deserialize_func(value)
-            except BaseException as e:
+            except BaseException:
                 if os.environ['ENVIRONMENT'] == 'develop':
                     traceback.print_exc()
                 self.fail('validator_failed')
@@ -363,8 +363,7 @@ class List(fields.List):
                 value = self.post_validate(value)
                 if not value:
                     self.fail('validator_failed')
-            except BaseException as e:
-                print(e)
+            except BaseException:
                 if os.environ['ENVIRONMENT'] == 'develop':
                     traceback.print_exc()
         return list(unique_everseen(value)) if self.remove_duplicates else value
@@ -423,8 +422,7 @@ class Function(fields.Field):
             data = self.deserialize_func(value, **self.func_kwargs)
             if data:
                 return data
-        except BaseException as e:
-            print(e)
+        except BaseException:
             if os.environ['ENVIRONMENT'] == 'develop':
                 traceback.print_exc()
         self.fail('validator_failed')
