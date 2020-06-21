@@ -1,20 +1,19 @@
-import os
-import re
-import traceback
-from datetime import datetime
-from urllib.parse import parse_qs
-
 import bcrypt
 import dateutil.parser
+import os
 import phonenumbers
+import re
 import requests
 import simplejson
+import traceback
 import validators
+from datetime import datetime
 from dateutil.rrule import rrulestr
 from jsonschema import Draft7Validator
 from marshmallow import fields, validate
 from more_itertools import unique_everseen
 from pytz import UTC
+from urllib.parse import parse_qs
 from validate_email import validate_email as validate_email_func
 
 from flask_base.swagger import mm_plugin
