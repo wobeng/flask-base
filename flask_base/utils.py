@@ -50,7 +50,8 @@ def find_schemas(method, schema, path=None):
 
 
 def generate_cookie(name, content='', max_age=0, allowed_domains=None, http_only=True, samesite=True):
-    secure = request.environ.get('HTTP_REFERER', 'https').startswith('https')
+    referer = request.environ.get('HTTP_REFERER', '')
+    secure = referer.startswith('https')
     cookie = {
         'key': name,
         'value': content,
@@ -68,7 +69,7 @@ def generate_cookie(name, content='', max_age=0, allowed_domains=None, http_only
 
     if samesite and secure:
         cookie['samesite'] = 'Strict'
-    elif domain == 'localhost':
+    elif referer.startswith('http://localhost'):
         cookie['samesite'] = 'None'
 
     return cookie
