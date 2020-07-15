@@ -1,7 +1,6 @@
 import inspect
-from collections import OrderedDict
-
 from apispec.ext.marshmallow import openapi
+from collections import OrderedDict
 from flask import request
 
 http_path = ['path', 'body', 'query', 'header', 'view_arg']
@@ -69,5 +68,7 @@ def generate_cookie(name, content='', max_age=0, allowed_domains=None, http_only
 
     if samesite and secure:
         cookie['samesite'] = 'Strict'
+    elif domain == 'localhost':
+        cookie['samesite'] = 'None'
 
     return cookie
