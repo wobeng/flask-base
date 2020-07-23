@@ -341,14 +341,20 @@ class Username(String):
 
 @mm_plugin.map_to_openapi_type('array', None)
 class List(fields.List):
-    def __init__(self, cls_or_instance, allow_empty=False, remove_duplicates=False, post_validate=None, **kwargs):
+    def __init__(self, cls_or_instance, allow_empty=False, remove_duplicates=False, post_validate=None, min_length=1, max_length=20000,**kwargs):
         self.allow_empty = allow_empty
         self.remove_duplicates = remove_duplicates
         self.post_validate = post_validate
+        self.min_length = min_length
+        self.max_length = max_length
         kwargs.setdefault('error_messages', default_error_messages())
         super(List, self).__init__(cls_or_instance, **kwargs)
 
     def _deserialize(self, value, attr, data, **kwargs):
+        if len(value) < self.min_length:
+            self.fail('required')
+        if len(value) > self.max_length:
+            self.fail('max_length')
         if isinstance(value, str):
             value = value.split(',')
         value = list(value)
@@ -356,7 +362,7 @@ class List(fields.List):
             return value
         if not value:
             self.fail('validator_failed')
-        value = super(List, self)._deserialize(value, attr, data)
+        value = super(List, self)._deserialize(value, attr, data, **kwargs)
         if self.post_validate:
             try:
                 value = self.post_validate(value)
