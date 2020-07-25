@@ -1,19 +1,20 @@
+import os
+import re
+import traceback
+from datetime import datetime
+from urllib.parse import parse_qs
+
 import bcrypt
 import dateutil.parser
-import os
 import phonenumbers
-import re
 import requests
 import simplejson
-import traceback
 import validators
-from datetime import datetime
 from dateutil.rrule import rrulestr
 from jsonschema import Draft7Validator
 from marshmallow import fields, validate
 from more_itertools import unique_everseen
 from pytz import UTC
-from urllib.parse import parse_qs
 from validate_email import validate_email as validate_email_func
 
 from flask_base.swagger import mm_plugin
@@ -341,7 +342,8 @@ class Username(String):
 
 @mm_plugin.map_to_openapi_type('array', None)
 class List(fields.List):
-    def __init__(self, cls_or_instance, allow_empty=False, remove_duplicates=False, post_validate=None, min_length=1, max_length=20000,**kwargs):
+    def __init__(self, cls_or_instance, allow_empty=False, remove_duplicates=False, post_validate=None, min_length=1,
+                 max_length=20000, **kwargs):
         self.allow_empty = allow_empty
         self.remove_duplicates = remove_duplicates
         self.post_validate = post_validate

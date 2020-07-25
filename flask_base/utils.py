@@ -1,6 +1,7 @@
 import inspect
-from apispec.ext.marshmallow import openapi
 from collections import OrderedDict
+
+from apispec.ext.marshmallow import openapi
 from flask import request
 
 http_path = ['path', 'body', 'query', 'header', 'view_arg']
