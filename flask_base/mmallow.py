@@ -18,7 +18,6 @@ from pytz import UTC
 from validate_email import validate_email as validate_email_func
 
 from flask_base.swagger import mm_plugin
-from py_tools.format import dumps
 
 FIELD_NULL = 'FieldNotNullException', 'This field cannot be empty'
 FIELD_VALIDATOR_FAILED = 'FieldValidatorFailedException', 'This field is invalid'
@@ -225,7 +224,7 @@ class JsonSchema(fields.Dict):
                 raise BaseException
             value['$schema'] = 'http://json-schema.org/schema#'
             Draft7Validator.check_schema(value)
-            return dumps(value)
+            return value
         except BaseException:
             self.fail('validator_failed')
 
