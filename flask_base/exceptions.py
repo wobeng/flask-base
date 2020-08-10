@@ -13,7 +13,7 @@ class Error(Exception):
         self.message = message
         self.error_type = error_type or self.error_type
         self.status_code = status_code or self.code
-        self.reason = reason or self.reason
+        self.reason = reason or {}
 
     def to_dict(self):
         output = {
