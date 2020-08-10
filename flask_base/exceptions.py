@@ -6,24 +6,27 @@ class Error(Exception):
     msg = 'Something went wrong'
     error_type = 'ApiException'
 
-    def __init__(self, message=None, status_code=None, payload=None, error_type=None):
+    def __init__(self, message=None, status_code=None, payload=None, error_type=None, reason=None):
         message = message or self.msg
         super(Error, self).__init__(message)
         self.payload = payload or []
         self.message = message
         self.error_type = error_type or self.error_type
         self.status_code = status_code or self.code
+        self.reason = reason or self.reason
 
     def to_dict(self):
         output = {
             'error': {
                 'code': self.status_code,
                 'message': self.message,
-                'error_type': self.error_type
+                'error_type': self.error_type,
+                'reason': self.reason
             }
         }
         if self.payload:
             output['error']['errors'] = self.payload
+            output['error']['reason'] = self.payload[0]['reason']
         return output
 
     def response(self):
