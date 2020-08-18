@@ -365,13 +365,9 @@ class List(fields.List):
             self.fail('validator_failed')
         value = super(List, self)._deserialize(value, attr, data, **kwargs)
         if self.post_validate:
-            try:
-                value = self.post_validate(value)
-                if not value:
-                    self.fail('validator_failed')
-            except BaseException:
-                if os.environ['ENVIRONMENT'] == 'develop':
-                    traceback.print_exc()
+            value = self.post_validate(value)
+            if not value:
+                self.fail('validator_failed')
         return list(unique_everseen(value)) if self.remove_duplicates else value
 
 

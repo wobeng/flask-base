@@ -50,6 +50,11 @@ class Schema(Error):
                 for child_e, fields in parent_e_val.items():
                     if isinstance(fields, dict):
                         for field, message in fields.items():
+                            try:
+                                message = message[0]
+                            except KeyError:
+                                child_e = child_e + '.' + list(message.keys())[0]
+                                message = list(message.values())[0]
                             self.to_payload(field, child_e, message[0], parent=parent_e)
                     else:
                         self.to_payload(child_e, 0, fields[0], parent=parent_e)
