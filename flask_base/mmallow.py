@@ -125,6 +125,7 @@ class String(fields.String):
         super(String, self).__init__(*args, **kwargs)
 
     def _deserialize(self, value, attr, obj, **kwargs):
+        value = str(value)
         if len(value) < self.min_length:
             self.fail('required')
         if len(value) > self.max_length:
@@ -460,3 +461,31 @@ class NestFunction(Nested):
         if not post_validated_data:
             self.fail('validator_failed')
         return post_validated_data
+
+
+class DynamicNested(Nested):
+    def __init__(self, nested, key_type, post_validate=None, *args, **kwargs):
+        self.key_type = key_type
+        self.post_validate = post_validate
+        self.nested_schema = Nested(getattr(nested, 'NestedSchema'))
+        super(DynamicNested, self).__init__(nested, *args, **kwargs)
+
+    def _deserialize(self, value, attr, obj, **kwargs):
+        ret = {}
+        for key, val in value.items():
+            k = self.key_type.deserialize(key, key, obj)
+            v = self.nested_schema.deserialize(val, key, obj)
+            ret[k] = v
+        if self.post_validate:
+            post_validated_data = self.post_validate(ret)
+            if not post_validated_data:
+                self.fail('validator_failed')
+        return ret
+
+    def _serialize(self, value, attr, obj, **kwargs):
+        ret = {}
+        for key, val in value.items():
+            k = self.key_type._serialize(key, attr, obj)
+            v = self.nested_schema.serialize(key, self.get_value(attr, obj))
+            ret[k] = v
+        return ret
