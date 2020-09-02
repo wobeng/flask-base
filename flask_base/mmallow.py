@@ -342,9 +342,8 @@ class Username(String):
 
 @mm_plugin.map_to_openapi_type('array', None)
 class List(fields.List):
-    def __init__(self, cls_or_instance, allow_empty=False, remove_duplicates=False, post_validate=None, min_length=1,
+    def __init__(self, cls_or_instance, remove_duplicates=False, post_validate=None, min_length=1,
                  max_length=20000, **kwargs):
-        self.allow_empty = allow_empty
         self.remove_duplicates = remove_duplicates
         self.post_validate = post_validate
         self.min_length = min_length
@@ -360,7 +359,7 @@ class List(fields.List):
         if isinstance(value, str):
             value = value.split(',')
         value = list(value)
-        if self.allow_empty and not value:
+        if self.min_length == 0 and not value:
             return value
         if not value:
             self.fail('validator_failed')
