@@ -186,14 +186,12 @@ class Phone(String):
 
 
 class Rrule(String):
-    def __init__(self, allow_none=False, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         kwargs.setdefault('example', 'FREQ=DAILY')
-        super(Rrule, self).__init__(allow_none=allow_none, *args, **kwargs)
+        super(Rrule, self).__init__(*args, **kwargs)
         self.error_messages['validator_failed'] = error_msg(FIELD_RRULE)
 
     def _deserialize(self, value, attr, obj, **kwargs):
-        if self.allow_none and value is None:
-            return value
         value = super(Rrule, self)._deserialize(value, attr, obj)
         try:
             rrulestr(value)
