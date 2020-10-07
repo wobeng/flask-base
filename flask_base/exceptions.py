@@ -7,7 +7,7 @@ class Error(Exception):
     error_type = 'ApiException'
 
     def __init__(self, message=None, status_code=None, payload=None, error_type=None, reason=None):
-        message = message or self.msg
+        message = str(message or self.msg)
         super(Error, self).__init__(message)
         self.payload = payload or []
         self.message = message
