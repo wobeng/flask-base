@@ -369,6 +369,18 @@ class List(fields.List):
         return list(unique_everseen(value)) if self.remove_duplicates else value
 
 
+@mm_plugin.map_to_openapi_type('array', None)
+class Set(List):
+    def __init__(self, cls_or_instance, post_validate=None, min_length=1, max_length=20000, **kwargs):
+        super(Set, self).__init__(cls_or_instance, True, post_validate, min_length, max_length, **kwargs)
+
+    def _deserialize(self, value, attr, data, **kwargs):
+        value = super(Set, self)._deserialize(value, attr, data, **kwargs)
+        if not value:
+            return None
+        return value
+
+
 @mm_plugin.map_to_openapi_type('integer', 'int32')
 class Integer(fields.Integer):
     def __init__(self, *args, **kwargs):
