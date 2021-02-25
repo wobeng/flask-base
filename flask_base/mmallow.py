@@ -221,6 +221,9 @@ class JsonSchema(fields.Dict):
         try:
             if not value:
                 raise BaseException
+            for i in list(value.values()):
+                if not i:
+                    raise BaseException
             value['$schema'] = 'http://json-schema.org/schema#'
             Draft7Validator.check_schema(value)
             return value
