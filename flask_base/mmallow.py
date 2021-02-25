@@ -14,6 +14,8 @@ from dateutil.rrule import rrulestr
 from jsonschema import Draft7Validator
 from marshmallow import fields, validate
 from more_itertools import unique_everseen
+from netaddr import IPNetwork
+from netaddr.core import AddrFormatError
 from pytz import UTC
 from validate_email import validate_email as validate_email_func
 
@@ -28,6 +30,7 @@ FIELD_MAX_LENGTH = 'FieldMaxLengthException', 'This field is too long'
 FIELD_RECAPTCHA = 'FieldRecaptchaTypeException', 'Are you human? Refresh page and submit again'
 FIELD_PASSWORD = 'FieldPasswordTypeException', 'Password must be at least 8 characters in length. Must contain a lowercase, uppercase and number.'
 FIELD_PHONE = 'FieldPhoneTypeException', 'Phone is invalid. Example: +12035556677.'
+FIELD_CIDR = 'FieldCidrTypeException', 'Address block is invalid. Example: 8.8.8.8/32 for IPv4 or 2001:4860:4860::8888/32 for IPv6'
 FIELD_RRULE = 'FieldRruleTypeException', 'Rrule is invalid. Example: FREQ=YEARLY;BYMONTH=1;BYMONTHDAY=1'
 FIELD_JSONSCHEMA = 'FieldJsonSchemaTypeException', 'Schema is invalid. Example: http://json-schema.org/examples.html'
 FIELD_DATE = 'FieldDateTypeException', 'Date is invalid. Example: mm/dd/yyyy.'
@@ -170,6 +173,20 @@ class Password(String):
         if self.regex.match(value) is None:
             self.fail('validator_failed')
         return bcrypt.hashpw(value.encode('utf-8'), bcrypt.gensalt()).decode()
+
+
+class Cidr(String):
+    def __init__(self, *args, **kwargs):
+        super(Cidr, self).__init__(*args, **kwargs)
+        self.error_messages['validator_failed'] = error_msg(FIELD_CIDR)
+
+    def _deserialize(self, value, attr, obj, **kwargs):
+        value = super(Cidr, self)._deserialize(value, attr, obj)
+        try:
+            IPNetwork(value)
+            return value
+        except AddrFormatError:
+            self.fail('validator_failed')
 
 
 class Phone(String):

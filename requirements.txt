@@ -15,4 +15,5 @@ validate_email
 more_itertools
 jsonschema==3.0.0a3
 pytz
+netaddr
 git+https://git@github.com/wobeng/py-tools.git@master
