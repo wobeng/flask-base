@@ -252,9 +252,9 @@ class JsonSchema(fields.Dict):
 class Date(String):
     def __init__(self, *args, **kwargs):
         super(Date, self).__init__(*args, **kwargs)
-        self.error_messages['validator_failed'] = error_msg(FIELD_DATE)
 
     def _deserialize(self, value, attr, obj, **kwargs):
+        self.error_messages['validator_failed'] = error_msg(FIELD_DATE)
         value = super(Date, self)._deserialize(value, attr, obj)
         return _date_time(self, value, attr, obj, error_msg(FIELD_START_END_DATE), date=True)
 
@@ -264,9 +264,9 @@ class DateTime(String):
     def __init__(self, iso_format=False, *args, **kwargs):
         super(DateTime, self).__init__(*args, **kwargs)
         self.iso_format = iso_format
-        self.error_messages['validator_failed'] = error_msg(FIELD_DATETIME)
 
     def _deserialize(self, value, attr, obj, **kwargs):
+        self.error_messages['validator_failed'] = error_msg(FIELD_DATETIME)
         value = super(DateTime, self)._deserialize(value, attr, obj)
         return _date_time(self, value, attr, obj, error_msg(FIELD_START_END_DATETIME), iso_format=self.iso_format)
 
@@ -335,17 +335,19 @@ class Username(String):
     def __init__(self, *args, deserialize=None, **kwargs):
         super(Username, self).__init__(*args, **kwargs)
         self.deserialize_func = deserialize
-        self.error_messages['validator_failed'] = error_msg(FIELD_USERNAME)
 
     def _deserialize(self, value, attr, obj, **kwargs):
+        self.error_messages['validator_failed'] = error_msg(FIELD_USERNAME)
         output = None
         value = super(Username, self)._deserialize(value, attr, obj)
-        if '+' in value:
-            output = validate_phone(value, self.min_length)
-            self.error_messages['validator_failed'] = error_msg(FIELD_PHONE)
-        elif '@' in value and '.' in value:
+        if '@' in value and '.' in value:
             output = validate_email(value, self.min_length)
             self.error_messages['validator_failed'] = error_msg(FIELD_EMAIL)
+        elif value[1].isdigit():
+            if value[0] != '+':
+                value = '+' + value
+            output = validate_phone(value, self.min_length)
+            self.error_messages['validator_failed'] = error_msg(FIELD_PHONE)
         if output and self.deserialize_func:
             try:
                 output = self.deserialize_func(value)
