@@ -403,6 +403,13 @@ class Set(List):
         return value
 
 
+@mm_plugin.map_to_openapi_type('boolean', None)
+class Boolean(fields.Boolean):
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault('error_messages', default_error_messages())
+        super(Boolean, self).__init__(*args, **kwargs)
+
+
 @mm_plugin.map_to_openapi_type('integer', 'int32')
 class Integer(fields.Integer):
     def __init__(self, *args, **kwargs):
