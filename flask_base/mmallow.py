@@ -163,7 +163,7 @@ class Recaptcha(fields.String):
 @mm_plugin.map_to_openapi_type('string', '	password')
 class Password(String):
     def __init__(self, *args, **kwargs):
-        regex = '^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$'
+        regex = r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$'
         self.regex = re.compile(regex, 0) if isinstance(regex, (str, bytes)) else regex
         super(Password, self).__init__(*args, **kwargs)
         self.error_messages['validator_failed'] = error_msg(FIELD_PASSWORD)
