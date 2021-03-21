@@ -120,10 +120,13 @@ def default_error_messages():
 
 
 class String(fields.String):
-    def __init__(self, min_length=1, max_length=20000, replace_space=False, *args, **kwargs):
+    def __init__(self, min_length=1, max_length=20000, replace_space=False,
+                 lower=False, capitalize=False, *args, **kwargs):
         self.min_length = min_length
         self.max_length = max_length
         self.replace_space = replace_space
+        self.lower = lower
+        self.capitalize = capitalize
         kwargs.setdefault('error_messages', default_error_messages())
         super(String, self).__init__(*args, **kwargs)
 
@@ -133,7 +136,13 @@ class String(fields.String):
             self.fail('required')
         if len(value) > self.max_length:
             self.fail('max_length')
-        return value.replace(' ', '-') if self.replace_space else value
+        if self.replace_space:
+            value = value.replace(' ', '-')
+        if self.lower:
+            value = value.lower()
+        if self.capitalize:
+            value = value.capitalize()
+        return value
 
 
 class Recaptcha(fields.String):
