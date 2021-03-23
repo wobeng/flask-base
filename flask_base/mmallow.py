@@ -474,7 +474,8 @@ class Function(fields.Field):
                 return data
         except BaseException:
             if os.environ['ENVIRONMENT'] == 'develop':
-                traceback.print_exc()
+                # traceback.print_exc()
+                pass
         self.fail('validator_failed')
 
 
