@@ -17,7 +17,6 @@ from more_itertools import unique_everseen
 from netaddr import IPNetwork
 from netaddr.core import AddrFormatError
 from pytz import UTC
-from validate_email import validate_email as validate_email_func
 
 from flask_base.swagger import mm_plugin
 
@@ -58,7 +57,10 @@ def error_msg(field):
 def validate_email(value, min_length=None):
     if not min_length and value == '':
         return value
-    if '@' not in value or '.' not in value or not validate_email_func(value):
+    value = value.replace(' ', '').strip()
+    if '@' not in value or '.' not in value:
+        return
+    if validators.email(value) is not True:
         return
     return value
 

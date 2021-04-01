@@ -23,7 +23,6 @@ setup(
         'phonenumbers',
         'requests',
         'validators',
-        'validate_email',
         'more_itertools',
         'jsonschema==3.0.0a3',
         'pytz',
