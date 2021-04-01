@@ -77,6 +77,16 @@ def validate_phone(value, min_length=None):
         return
 
 
+def validate_username(value, min_length=None):
+    if '@' in value and '.' in value:
+        return validate_email(value, min_length), 'email'
+    elif value[1].isdigit():
+        if value[0] != '+':
+            value = '+' + value
+        return validate_phone(value, min_length), 'phone'
+    return None, None
+
+
 def _date_time(self, value, attr, obj, validator_failed, date=False, iso_format=False):
     if not self.min_length and value == '':
         return value
@@ -349,16 +359,16 @@ class Username(String):
 
     def _deserialize(self, value, attr, obj, **kwargs):
         self.error_messages['validator_failed'] = error_msg(FIELD_USERNAME)
-        output = None
+
         value = super(Username, self)._deserialize(value, attr, obj)
-        if '@' in value and '.' in value:
-            output = validate_email(value, self.min_length)
+
+        output, output_type = validate_username(value, self.min_length)
+
+        if output_type == 'email':
             self.error_messages['validator_failed'] = error_msg(FIELD_EMAIL)
-        elif value[1].isdigit():
-            if value[0] != '+':
-                value = '+' + value
-            output = validate_phone(value, self.min_length)
+        elif output_type == 'phone':
             self.error_messages['validator_failed'] = error_msg(FIELD_PHONE)
+
         if output and self.deserialize_func:
             try:
                 output = self.deserialize_func(value)
@@ -366,6 +376,7 @@ class Username(String):
                 if os.environ['ENVIRONMENT'] == 'develop':
                     traceback.print_exc()
                 self.fail('validator_failed')
+
         if not output:
             self.fail('validator_failed')
         return output
