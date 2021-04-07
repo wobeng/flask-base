@@ -486,7 +486,7 @@ class Function(fields.Field):
             if data:
                 return data
         except BaseException:
-            if os.environ['ENVIRONMENT'] == 'develop':
+            if os.environ.get('FLASK_ENV', '') == 'development':
                 traceback.print_exc()
         self.fail('validator_failed')
 
