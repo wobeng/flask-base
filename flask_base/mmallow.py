@@ -373,7 +373,7 @@ class Username(String):
             try:
                 output = self.deserialize_func(value)
             except BaseException:
-                if os.environ['ENVIRONMENT'] == 'develop':
+                if os.environ.get('FLASK_ENV', '') == 'development':
                     traceback.print_exc()
                 self.fail('validator_failed')
 
