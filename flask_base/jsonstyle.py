@@ -38,12 +38,12 @@ class GoogleJsonStyle:
     @staticmethod
     def add_next_link(data):
         if 'items' in data:
-            if 'LastEvaluatedKey' in data:
+            if 'last_key' in data:
                 query = dict(g.incoming_data.get('query', {}))
-                query.pop('start', None)  # delete old start key
+                query.pop('start_key', None)  # delete old start key
                 query = '&'.join('{}={}'.format(key, val[0]) for key, val in query.items())
                 query = '&' + query if query else query  # add & if not empty
-                start = urlencode({'start': json.dumps(data.pop('LastEvaluatedKey'))})
+                start = urlencode({'start_key': json.dumps(data.pop('last_key'))})
                 data['nextLink'] = request.base_url + '?' + start + query
         return data
 

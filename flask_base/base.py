@@ -22,7 +22,7 @@ class Base(MethodView):
 
     def success(self, data=None, msg=None):
         if isinstance(data, list):
-            data = {'Items': data}
+            data = {'items': data}
         style = GoogleJsonStyle(self, data, msg)
         response = make_response(style.body())
         response.status_code = style.status_code()

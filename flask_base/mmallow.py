@@ -244,7 +244,10 @@ class ParseQueryString(String):
         value = super(ParseQueryString, self)._deserialize(value, attr, obj)
         try:
             r = parse_qs(attr + '=' + value, strict_parsing=True)
-            return simplejson.loads(r[attr][0])
+            output = simplejson.loads(r[attr][0])
+            if not isinstance(output, dict):
+                raise
+            return output
         except BaseException:
             self.fail('validator_failed')
 
