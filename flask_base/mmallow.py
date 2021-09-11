@@ -1,6 +1,5 @@
 import os
 import re
-import traceback
 from datetime import datetime
 from urllib.parse import parse_qs
 
@@ -376,8 +375,6 @@ class Username(String):
             try:
                 output = self.deserialize_func(value)
             except BaseException:
-                if os.environ.get('FLASK_ENV', '') == 'development':
-                    traceback.print_exc()
                 self.fail('validator_failed')
 
         if not output:
@@ -489,8 +486,7 @@ class Function(fields.Field):
             if data:
                 return data
         except BaseException:
-            if os.environ.get('FLASK_ENV', '') == 'development':
-                traceback.print_exc()
+            pass
         self.fail('validator_failed')
 
 
