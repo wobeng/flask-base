@@ -56,7 +56,8 @@ def init_api(name, title='', uiversion=2, supports_credentials=False, origins='*
         host=LazyString(lambda: request.host),
         schemes=[LazyString(lambda: 'https' if request.is_secure else 'http')]
     )
-    Swagger(app, template=template)
+    swagger_config = {'specs_route': '/apidocs'}
+    Swagger(app, config=swagger_config, merge=True, template=template)
 
     if index_docs:
         @app.route('/')
