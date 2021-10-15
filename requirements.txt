@@ -12,7 +12,7 @@ phonenumbers
 requests
 validators
 more_itertools
-jsonschema==3.0.0a3
+jsonschema
 pytz
 netaddr
 git+https://git@github.com/wobeng/py-tools.git@master
