@@ -100,7 +100,8 @@ def _date_time(self, value, attr, obj, validator_failed, date=False, iso_format=
             # set dates
             duration = dict()
             duration[attr] = dt
-            other_date = 'end_date' if attr.startswith('start_') else 'start_date'
+            other_date = 'end_date' if attr.startswith(
+                'start_') else 'start_date'
             duration[other_date] = dateutil.parser.parse(obj[other_date])
             if date:
                 duration[other_date] = duration[other_date].date()
@@ -112,7 +113,7 @@ def _date_time(self, value, attr, obj, validator_failed, date=False, iso_format=
                 self.error_messages['validator_failed'] = validator_failed
                 raise BaseException
         # return string if preferred
-        if iso_format or date:
+        if iso_format:
             return dt.isoformat()
         return dt
     except BaseException:
@@ -184,7 +185,8 @@ class Recaptcha(fields.String):
 class Password(String):
     def __init__(self, *args, **kwargs):
         regex = r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$'
-        self.regex = re.compile(regex, 0) if isinstance(regex, (str, bytes)) else regex
+        self.regex = re.compile(regex, 0) if isinstance(
+            regex, (str, bytes)) else regex
         super(Password, self).__init__(*args, **kwargs)
         self.error_messages['validator_failed'] = error_msg(FIELD_PASSWORD)
 
@@ -273,13 +275,14 @@ class JsonSchema(fields.Dict):
 
 @mm_plugin.map_to_openapi_type('string', 'date')
 class Date(String):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, iso_format=True, *args, **kwargs):
         super(Date, self).__init__(*args, **kwargs)
+        self.iso_format = iso_format
 
     def _deserialize(self, value, attr, obj, **kwargs):
         self.error_messages['validator_failed'] = error_msg(FIELD_DATE)
         value = super(Date, self)._deserialize(value, attr, obj)
-        return _date_time(self, value, attr, obj, error_msg(FIELD_START_END_DATE), date=True)
+        return _date_time(self, value, attr, obj, error_msg(FIELD_START_END_DATE), date=True, iso_format=self.iso_format)
 
 
 @mm_plugin.map_to_openapi_type('string', 'date-time')
@@ -298,7 +301,8 @@ class DateTime(String):
 class FutureDateTime(DateTime):
     def __init__(self, *args, **kwargs):
         super(FutureDateTime, self).__init__(*args, **kwargs)
-        self.error_messages['validator_failed'] = error_msg(FIELD_FUTURE_DATETIME)
+        self.error_messages['validator_failed'] = error_msg(
+            FIELD_FUTURE_DATETIME)
 
     def _deserialize(self, value, attr, obj, **kwargs):
         future = super(FutureDateTime, self)._deserialize(value, attr, obj)
@@ -416,7 +420,8 @@ class List(fields.List):
 @mm_plugin.map_to_openapi_type('array', None)
 class Set(List):
     def __init__(self, cls_or_instance, post_validate=None, min_length=1, max_length=20000, **kwargs):
-        super(Set, self).__init__(cls_or_instance, True, post_validate, min_length, max_length, **kwargs)
+        super(Set, self).__init__(cls_or_instance, True,
+                                  post_validate, min_length, max_length, **kwargs)
 
     def _deserialize(self, value, attr, data, **kwargs):
         value = super(Set, self)._deserialize(value, attr, data, **kwargs)
@@ -515,7 +520,8 @@ class NestFunction(Nested):
         super(NestFunction, self).__init__(nested, *args, **kwargs)
 
     def _deserialize(self, value, attr, obj, **kwargs):
-        validated_data = super(NestFunction, self)._deserialize(value, attr, obj)
+        validated_data = super(
+            NestFunction, self)._deserialize(value, attr, obj)
         post_validated_data = self.deserialize_func(validated_data)
         if not post_validated_data:
             self.fail('validator_failed')
