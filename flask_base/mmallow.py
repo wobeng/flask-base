@@ -199,7 +199,7 @@ class Password(String):
 
 class Cidr(String):
     def __init__(self, *args, **kwargs):
-        super(Cidr, self).__init__(*args, **kwargs)
+        super(Cidr, self).__init__(lower=True,*args, **kwargs)
         self.error_messages['validator_failed'] = error_msg(FIELD_CIDR)
 
     def _deserialize(self, value, attr, obj, **kwargs):
@@ -213,7 +213,7 @@ class Cidr(String):
 
 class Phone(String):
     def __init__(self, *args, **kwargs):
-        super(Phone, self).__init__(*args, **kwargs)
+        super(Phone, self).__init__(lower=True,*args, **kwargs)
         self.error_messages['validator_failed'] = error_msg(FIELD_PHONE)
 
     def _deserialize(self, value, attr, obj, **kwargs):
@@ -315,7 +315,7 @@ class FutureDateTime(DateTime):
 @mm_plugin.map_to_openapi_type('string', 'email')
 class Email(String):
     def __init__(self, *args, **kwargs):
-        super(Email, self).__init__(*args, **kwargs)
+        super(Email, self).__init__(lower=True,*args, **kwargs)
         self.error_messages['validator_failed'] = error_msg(FIELD_EMAIL)
 
     def _deserialize(self, value, attr, obj, **kwargs):
@@ -329,7 +329,7 @@ class Email(String):
 @mm_plugin.map_to_openapi_type('string', 'url')
 class Url(String):
     def __init__(self, *args, **kwargs):
-        super(Url, self).__init__(*args, **kwargs)
+        super(Url, self).__init__(lower=True,*args, **kwargs)
         self.error_messages['validator_failed'] = error_msg(FIELD_URL)
 
     def _deserialize(self, value, attr, obj, **kwargs):
@@ -360,7 +360,7 @@ class Dict(fields.Dict):
 
 class Username(String):
     def __init__(self, *args, deserialize=None, **kwargs):
-        super(Username, self).__init__(*args, **kwargs)
+        super(Username, self).__init__(lower=True,*args, **kwargs)
         self.deserialize_func = deserialize
 
     def _deserialize(self, value, attr, obj, **kwargs):
