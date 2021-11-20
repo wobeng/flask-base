@@ -90,6 +90,8 @@ def generate_swagger(cls):
                         parameter['required'] = True
                     if 'example' in spec[class_name]['properties'][f]:
                         parameter['default'] = spec[class_name]['properties'][f]['example']
+                    if 'example' in spec[class_name]['properties'][f].get('metadata',{}):
+                        parameter['default'] = spec[class_name]['properties'][f]['metadata']['example']
                     parameters.append(parameter)
 
         output = list([class_name, class_name, '---'])
