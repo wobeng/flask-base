@@ -18,7 +18,6 @@ from netaddr.core import AddrFormatError
 from pytz import UTC
 
 from flask_base.swagger import mm_plugin
-
 FIELD_NULL = 'FieldNotNullException', 'This field cannot be empty'
 FIELD_VALIDATOR_FAILED = 'FieldValidatorFailedException', 'This field is invalid'
 FIELD_REQUIRED = 'FieldRequiredException', 'This field is required'
@@ -131,18 +130,50 @@ def default_error_messages():
     })
 
 
-class String(fields.String):
+class Fields:
+    def _serialize(self, value, attr, obj, **kwargs):
+
+        for method in ['pre_deserialize', 'main_deserialize', 'post_deserialize']:
+            method = getattr(self, method, None)
+            if method:
+                value = method(value, attr, obj, **kwargs)
+
+        if self.post_validate:
+            try:
+                value = self.post_validate(value)
+            except BaseException:
+                raise self.make_error('validator_failed')
+        return value
+
+    def _deserialize(self, value, attr, obj, **kwargs):
+        for method in ['pre_deserialize', 'main_deserialize', 'post_deserialize']:
+            method = getattr(self, method, None)
+            if method:
+                value = method(value, attr, obj, **kwargs)
+
+        if self.post_validate:
+            try:
+                value = self.post_validate(value)
+                if not value:
+                    raise
+            except BaseException:
+                raise self.make_error('validator_failed')
+        return value
+
+
+class String(Fields, fields.String):
     def __init__(self, min_length=1, max_length=20000, replace_space=False,
-                 lower=False, capitalize=False, *args, **kwargs):
+                 lower=False, capitalize=False, post_validate=None, *args, **kwargs):
         self.min_length = min_length
         self.max_length = max_length
         self.replace_space = replace_space
         self.lower = lower
         self.capitalize = capitalize
+        self.post_validate = post_validate
         kwargs.setdefault('error_messages', default_error_messages())
         super(String, self).__init__(*args, **kwargs)
 
-    def _deserialize(self, value, attr, obj, **kwargs):
+    def main_deserialize(self, value, attr, obj, **kwargs):
         value = str(value)
         if len(value) < self.min_length:
             raise self.make_error('required')
@@ -157,15 +188,14 @@ class String(fields.String):
         return value
 
 
-class Recaptcha(fields.String):
+class Recaptcha(String):
     def __init__(self, action, *args, **kwargs):
         self.action = action
         kwargs.setdefault('error_messages', default_error_messages())
         super(Recaptcha, self).__init__(*args, **kwargs)
         self.error_messages['validator_failed'] = error_msg(FIELD_RECAPTCHA)
 
-    def _deserialize(self, value, attr, obj, **kwargs):
-        value = super(Recaptcha, self)._deserialize(value, attr, obj)
+    def post_deserialize(self, value, attr, obj, **kwargs):
         if value == os.environ['RECAPTCHA_SECRET_TEST']:
             return True
         r = requests.post(
@@ -190,8 +220,7 @@ class Password(String):
         super(Password, self).__init__(*args, **kwargs)
         self.error_messages['validator_failed'] = error_msg(FIELD_PASSWORD)
 
-    def _deserialize(self, value, attr, obj, **kwargs):
-        value = super(Password, self)._deserialize(value, attr, obj)
+    def post_deserialize(self, value, attr, obj, **kwargs):
         if self.regex.match(value) is None:
             raise self.make_error('validator_failed')
         return bcrypt.hashpw(value.encode('utf-8'), bcrypt.gensalt()).decode()
@@ -199,11 +228,10 @@ class Password(String):
 
 class Cidr(String):
     def __init__(self, *args, **kwargs):
-        super(Cidr, self).__init__(lower=True,*args, **kwargs)
+        super(Cidr, self).__init__(lower=True, *args, **kwargs)
         self.error_messages['validator_failed'] = error_msg(FIELD_CIDR)
 
-    def _deserialize(self, value, attr, obj, **kwargs):
-        value = super(Cidr, self)._deserialize(value, attr, obj)
+    def post_deserialize(self, value, attr, obj, **kwargs):
         try:
             IPNetwork(value)
             return value
@@ -213,11 +241,10 @@ class Cidr(String):
 
 class Phone(String):
     def __init__(self, *args, **kwargs):
-        super(Phone, self).__init__(lower=True,*args, **kwargs)
+        super(Phone, self).__init__(lower=True, *args, **kwargs)
         self.error_messages['validator_failed'] = error_msg(FIELD_PHONE)
 
-    def _deserialize(self, value, attr, obj, **kwargs):
-        value = super(Phone, self)._deserialize(value, attr, obj)
+    def post_deserialize(self, value, attr, obj, **kwargs):
         output = validate_phone(value, self.min_length)
         if not output:
             raise self.make_error('validator_failed')
@@ -226,12 +253,11 @@ class Phone(String):
 
 class Rrule(String):
     def __init__(self, *args, **kwargs):
-        kwargs.setdefault('metadata', {'example' : 'FREQ=DAILY'})
+        kwargs.setdefault('metadata', {'example': 'FREQ=DAILY'})
         super(Rrule, self).__init__(*args, **kwargs)
         self.error_messages['validator_failed'] = error_msg(FIELD_RRULE)
 
-    def _deserialize(self, value, attr, obj, **kwargs):
-        value = super(Rrule, self)._deserialize(value, attr, obj)
+    def post_deserialize(self, value, attr, obj, **kwargs):
         try:
             rrulestr(value)
             return value
@@ -241,8 +267,7 @@ class Rrule(String):
 
 class ParseQueryString(String):
 
-    def _deserialize(self, value, attr, obj, **kwargs):
-        value = super(ParseQueryString, self)._deserialize(value, attr, obj)
+    def post_deserialize(self, value, attr, obj, **kwargs):
         try:
             r = parse_qs(attr + '=' + value, strict_parsing=True)
             output = simplejson.loads(r[attr][0])
@@ -253,35 +278,14 @@ class ParseQueryString(String):
             raise self.make_error('validator_failed')
 
 
-class JsonSchema(fields.Dict):
-    def __init__(self, *args, **kwargs):
-        super(JsonSchema, self).__init__(*args, **kwargs)
-        self.error_messages['validator_failed'] = error_msg(FIELD_JSONSCHEMA)
-
-    def _deserialize(self, value, attr, obj, **kwargs):
-        value = super(JsonSchema, self)._deserialize(value, attr, obj)
-        try:
-            if not value:
-                raise BaseException
-            for i in list(value.values()):
-                if not i:
-                    raise BaseException
-            value['$schema'] = 'http://json-schema.org/schema#'
-            Draft7Validator.check_schema(value)
-            return value
-        except BaseException:
-            raise self.make_error('validator_failed')
-
-
 @mm_plugin.map_to_openapi_type('string', 'date')
 class Date(String):
     def __init__(self, iso_format=True, *args, **kwargs):
         super(Date, self).__init__(*args, **kwargs)
         self.iso_format = iso_format
 
-    def _deserialize(self, value, attr, obj, **kwargs):
+    def post_deserialize(self, value, attr, obj, **kwargs):
         self.error_messages['validator_failed'] = error_msg(FIELD_DATE)
-        value = super(Date, self)._deserialize(value, attr, obj)
         return _date_time(self, value, attr, obj, error_msg(FIELD_START_END_DATE), date=True, iso_format=self.iso_format)
 
 
@@ -291,9 +295,8 @@ class DateTime(String):
         super(DateTime, self).__init__(*args, **kwargs)
         self.iso_format = iso_format
 
-    def _deserialize(self, value, attr, obj, **kwargs):
+    def post_deserialize(self, value, attr, obj, **kwargs):
         self.error_messages['validator_failed'] = error_msg(FIELD_DATETIME)
-        value = super(DateTime, self)._deserialize(value, attr, obj)
         return _date_time(self, value, attr, obj, error_msg(FIELD_START_END_DATETIME), iso_format=self.iso_format)
 
 
@@ -304,7 +307,7 @@ class FutureDateTime(DateTime):
         self.error_messages['validator_failed'] = error_msg(
             FIELD_FUTURE_DATETIME)
 
-    def _deserialize(self, value, attr, obj, **kwargs):
+    def post_deserialize(self, value, attr, obj, **kwargs):
         future = super(FutureDateTime, self)._deserialize(value, attr, obj)
         present = datetime_utc().replace(microsecond=0)
         if present > future:
@@ -315,11 +318,10 @@ class FutureDateTime(DateTime):
 @mm_plugin.map_to_openapi_type('string', 'email')
 class Email(String):
     def __init__(self, *args, **kwargs):
-        super(Email, self).__init__(lower=True,*args, **kwargs)
+        super(Email, self).__init__(lower=True, *args, **kwargs)
         self.error_messages['validator_failed'] = error_msg(FIELD_EMAIL)
 
-    def _deserialize(self, value, attr, obj, **kwargs):
-        value = super(Email, self)._deserialize(value, attr, obj)
+    def post_deserialize(self, value, attr, obj, **kwargs):
         output = validate_email(value, min_length=None)
         if not output:
             raise self.make_error('validator_failed')
@@ -329,11 +331,10 @@ class Email(String):
 @mm_plugin.map_to_openapi_type('string', 'url')
 class Url(String):
     def __init__(self, *args, **kwargs):
-        super(Url, self).__init__(lower=True,*args, **kwargs)
+        super(Url, self).__init__(lower=True, *args, **kwargs)
         self.error_messages['validator_failed'] = error_msg(FIELD_URL)
 
-    def _deserialize(self, value, attr, obj, **kwargs):
-        value = super(Url, self)._deserialize(value, attr, obj)
+    def post_deserialize(self, value, attr, obj, **kwargs):
         if not self.min_length and value == '':
             return value
         if not validators.url(value):
@@ -342,31 +343,44 @@ class Url(String):
 
 
 @mm_plugin.map_to_openapi_type('object', None)
-class Dict(fields.Dict):
-    def __init__(self, allow_empty=False, *args, **kwargs):
+class Dict(Fields, fields.Dict):
+    def __init__(self, allow_empty=False, post_validate=None, *args, **kwargs):
         self.allow_empty = allow_empty
+        self.post_validate = post_validate
         kwargs.setdefault('error_messages', default_error_messages())
         super(Dict, self).__init__(*args, **kwargs)
 
-    def _deserialize(self, value, attr, data, **kwargs):
-        if not isinstance(value, dict):
-            raise self.make_error('validator_failed')
+    def main_deserialize(self, value, attr, data, **kwargs):
         if self.allow_empty and not value:
             return value
         if not value:
             raise self.make_error('validator_failed')
-        return super(Dict, self)._deserialize(value, attr, data)
+        return fields.Dict._deserialize(self, value, attr, data)
+
+
+class JsonSchema(Dict):
+    def __init__(self, *args, **kwargs):
+        super(JsonSchema, self).__init__(*args, **kwargs)
+        self.error_messages['validator_failed'] = error_msg(FIELD_JSONSCHEMA)
+
+    def post_deserialize(self, value, attr, obj, **kwargs):
+        try:
+            for i in list(value.values()):
+                if not i:
+                    raise BaseException
+            value['$schema'] = 'http://json-schema.org/schema#'
+            Draft7Validator.check_schema(value)
+            return value
+        except BaseException:
+            raise self.make_error('validator_failed')
 
 
 class Username(String):
-    def __init__(self, *args, deserialize=None, **kwargs):
-        super(Username, self).__init__(lower=True,*args, **kwargs)
-        self.deserialize_func = deserialize
-
-    def _deserialize(self, value, attr, obj, **kwargs):
+    def __init__(self,  *args, **kwargs):
+        super(Username, self).__init__(lower=True, *args, **kwargs)
         self.error_messages['validator_failed'] = error_msg(FIELD_USERNAME)
 
-        value = super(Username, self)._deserialize(value, attr, obj)
+    def post_deserialize(self, value, attr, obj, **kwargs):
 
         output, output_type = validate_username(value, self.min_length)
 
@@ -375,29 +389,24 @@ class Username(String):
         elif output_type == 'phone':
             self.error_messages['validator_failed'] = error_msg(FIELD_PHONE)
 
-        if output and self.deserialize_func:
-            try:
-                output = self.deserialize_func(value)
-            except BaseException:
-                raise self.make_error('validator_failed')
-
         if not output:
             raise self.make_error('validator_failed')
+
         return output
 
 
 @mm_plugin.map_to_openapi_type('array', None)
-class List(fields.List):
-    def __init__(self, cls_or_instance, remove_duplicates=False, post_validate=None, min_length=1,
-                 max_length=20000, **kwargs):
+class List(Fields, fields.List):
+    def __init__(self, cls_or_instance, remove_duplicates=False, min_length=1,
+                 max_length=20000, post_validate=None, **kwargs):
         self.remove_duplicates = remove_duplicates
-        self.post_validate = post_validate
         self.min_length = min_length
         self.max_length = max_length
+        self.post_validate = post_validate
         kwargs.setdefault('error_messages', default_error_messages())
         super(List, self).__init__(cls_or_instance, **kwargs)
 
-    def _deserialize(self, value, attr, data, **kwargs):
+    def main_deserialize(self, value, attr, data, **kwargs):
         if len(value) < self.min_length:
             raise self.make_error('required')
         if len(value) > self.max_length:
@@ -409,22 +418,19 @@ class List(fields.List):
             return value
         if not value:
             raise self.make_error('validator_failed')
-        value = super(List, self)._deserialize(value, attr, data, **kwargs)
-        if self.post_validate:
-            value = self.post_validate(value)
-            if not value:
-                raise self.make_error('validator_failed')
-        return list(unique_everseen(value)) if self.remove_duplicates else value
+        value = fields.List._deserialize(self, value, attr, data, **kwargs)
+        if self.remove_duplicates:
+            value = list(unique_everseen(value))
+        return value
 
 
 @mm_plugin.map_to_openapi_type('array', None)
 class Set(List):
-    def __init__(self, cls_or_instance, post_validate=None, min_length=1, max_length=20000, **kwargs):
-        super(Set, self).__init__(cls_or_instance, True,
-                                  post_validate, min_length, max_length, **kwargs)
+    def __init__(self, cls_or_instance,  min_length=1, max_length=20000, **kwargs):
+        super(Set, self).__init__(cls_or_instance,
+                                  True, min_length, max_length, **kwargs)
 
-    def _deserialize(self, value, attr, data, **kwargs):
-        value = super(Set, self)._deserialize(value, attr, data, **kwargs)
+    def post_deserialize(self, value, attr, data, **kwargs):
         if not value:
             return None
         return value
@@ -451,10 +457,15 @@ class Float(fields.Float):
         super(Float, self).__init__(*args, **kwargs)
 
 
-class Nested(fields.Nested):
-    def __init__(self, *args, **kwargs):
+class Nested(Fields, fields.Nested):
+    def __init__(self, *args, post_validate=None, **kwargs):
+        self.post_validate = post_validate
         kwargs.setdefault('error_messages', default_error_messages())
         super(Nested, self).__init__(*args, **kwargs)
+
+    def main_deserialize(self, value, attr, obj, **kwargs):
+        value = fields.Nested._deserialize(self, value, attr, obj, **kwargs)
+        return value
 
 
 class OneOf(validate.OneOf):
@@ -501,12 +512,6 @@ class StringFunction(Function):
         super(StringFunction, self).__init__(input_type=str, *args, **kwargs)
 
 
-@mm_plugin.map_to_openapi_type('array', None)
-class ListFunction(Function):
-    def __init__(self, *args, **kwargs):
-        super(ListFunction, self).__init__(input_type=list, *args, **kwargs)
-
-
 @mm_plugin.map_to_openapi_type('object', None)
 class DictFunction(Function):
     def __init__(self, *args, **kwargs):
@@ -529,25 +534,20 @@ class NestFunction(Nested):
 
 
 class DynamicNested(Nested):
-    def __init__(self, nested, key_type, post_validate=None, *args, **kwargs):
+    def __init__(self, nested, key_type, *args, **kwargs):
         self.key_type = key_type
-        self.post_validate = post_validate
         self.nested_schema = Nested(getattr(nested, 'NestedSchema'))
         super(DynamicNested, self).__init__(nested, *args, **kwargs)
 
-    def _deserialize(self, value, attr, obj, **kwargs):
+    def post_deserialize(self, value, attr, obj, **kwargs):
         ret = {}
         for key, val in value.items():
             k = self.key_type.deserialize(key, key, obj)
             v = self.nested_schema.deserialize(val, key, obj)
             ret[k] = v
-        if self.post_validate:
-            post_validated_data = self.post_validate(ret)
-            if not post_validated_data:
-                raise self.make_error('validator_failed')
         return ret
 
-    def _serialize(self, value, attr, obj, **kwargs):
+    def post_serialize(self, value, attr, obj, **kwargs):
         ret = {}
         for key, val in value.items():
             k = self.key_type._serialize(key, attr, obj)
