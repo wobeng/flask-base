@@ -156,8 +156,11 @@ class Fields:
                 value = self.post_validate(value)
                 if not value:
                     raise
-            except BaseException:
-                raise self.make_error('validator_failed')
+            except BaseException as e:
+                error = self.make_error('validator_failed')
+                error.messages.append(str(e))
+                raise error
+
         return value
 
 

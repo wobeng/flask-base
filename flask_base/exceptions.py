@@ -42,7 +42,15 @@ class Schema(Error):
         self.payload = []
         self.domain = domain
         for key, value in self.flatten_dict(errors).items():
-            self.to_payload(key, key, value[0] if isinstance(value, list) else str(value))
+            if isinstance(value, list):
+                message = value[0]
+                if len(value) == 2:
+                    reason = value[1]
+            else:
+                message = str(value)
+                reason = None
+
+            self.to_payload(key, key, message, reason= reason)
         super(Schema, self).__init__('Request input schema is invalid', 400, self.payload, 'SchemaFieldsException')
 
     @staticmethod
@@ -57,13 +65,13 @@ class Schema(Error):
 
         return dict(items)
 
-    def to_payload(self, location, location_id, message, parent=None):
+    def to_payload(self, location, location_id, message, parent=None, reason=None):
         error = {
             'domain': self.domain.lower(),
             'locationType': self.__class__.__name__.lower(),
             'location': location,
             'locationId': location_id,
-            "reason": message,
+            "reason": reason or message,
             'message': message
         }
         if parent:
