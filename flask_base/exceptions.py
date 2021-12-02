@@ -41,6 +41,7 @@ class Schema(Error):
     def __init__(self, errors, domain):
         self.payload = []
         self.domain = domain
+        reason = None
         for key, value in self.flatten_dict(errors).items():
             if isinstance(value, list):
                 message = value[0]
@@ -48,10 +49,9 @@ class Schema(Error):
                     reason = value[1]
             else:
                 message = str(value)
-                reason = None
-
-            self.to_payload(key, key, message, reason= reason)
-        super(Schema, self).__init__('Request input schema is invalid', 400, self.payload, 'SchemaFieldsException')
+            self.to_payload(key, key, message, reason=reason)
+        super(Schema, self).__init__('Request input schema is invalid',
+                                     400, self.payload, 'SchemaFieldsException')
 
     @staticmethod
     def flatten_dict(d):

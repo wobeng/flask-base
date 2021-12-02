@@ -11,7 +11,7 @@ import simplejson
 import validators
 from dateutil.rrule import rrulestr
 from jsonschema import Draft7Validator
-from marshmallow import fields, validate
+from marshmallow import fields, validate, INCLUDE
 from more_itertools import unique_everseen
 from netaddr import IPNetwork
 from netaddr.core import AddrFormatError
@@ -537,10 +537,12 @@ class NestFunction(Nested):
 
 
 class DynamicNested(Nested):
+
     def __init__(self, nested, key_type, *args, **kwargs):
+        super(DynamicNested, self).__init__(
+            nested, unknown=INCLUDE, *args, **kwargs)
         self.key_type = key_type
-        self.nested_schema = Nested(getattr(nested, 'NestedSchema'))
-        super(DynamicNested, self).__init__(nested, *args, **kwargs)
+        self.nested_schema = Nested(nested, unknown=INCLUDE)
 
     def post_deserialize(self, value, attr, obj, **kwargs):
         ret = {}
