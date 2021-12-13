@@ -155,7 +155,8 @@ class Fields:
             try:
                 value = self.post_validate(value)
                 if not value:
-                    raise
+                    if getattr(self, 'min_length', 1) != 0 and getattr(self, 'allow_empty', False) is False:
+                        raise
             except BaseException as e:
                 error = self.make_error('validator_failed')
                 error.messages.append(str(e))
