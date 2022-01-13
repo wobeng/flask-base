@@ -23,7 +23,8 @@ FIELD_VALIDATOR_FAILED = 'FieldValidatorFailedException', 'This field is invalid
 FIELD_REQUIRED = 'FieldRequiredException', 'This field is required'
 FIELD_FIELD_TYPE = 'FieldTypeException', 'This field is invalid'
 FIELD_INVALID = 'FieldValidatorFailedException', 'This field is invalid'
-FIELD_MAX_LENGTH = 'FieldMaxLengthException', 'This field is too long'
+FIELD_MAX_LENGTH = 'FieldMaxLengthException', 'This field is too long or higher than expected'
+FIELD_MIN_LENGTH = 'FieldMinLengthException', 'This field is too short or lower than expected'
 FIELD_RECAPTCHA = 'FieldRecaptchaTypeException', 'Are you human? Refresh page and submit again'
 FIELD_PASSWORD = 'FieldPasswordTypeException', 'Password must be at least 8 characters in length. Must contain a lowercase, uppercase and number.'
 FIELD_PHONE = 'FieldPhoneTypeException', 'Phone is invalid. Example: +12035556677.'
@@ -126,7 +127,8 @@ def default_error_messages():
         'required': error_msg(FIELD_REQUIRED),
         'field_type': error_msg(FIELD_FIELD_TYPE),
         'invalid': error_msg(FIELD_INVALID),
-        'max_length': error_msg(FIELD_MAX_LENGTH)
+        'max_length': error_msg(FIELD_MAX_LENGTH),
+        'min_length': error_msg(FIELD_MIN_LENGTH)
     })
 
 
@@ -180,7 +182,7 @@ class String(Fields, fields.String):
     def main_deserialize(self, value, attr, obj, **kwargs):
         value = str(value)
         if len(value) < self.min_length:
-            raise self.make_error('required')
+            raise self.make_error('min_length')
         if len(value) > self.max_length:
             raise self.make_error('max_length')
         if self.replace_space:
@@ -449,9 +451,19 @@ class Boolean(fields.Boolean):
 
 @mm_plugin.map_to_openapi_type('integer', 'int32')
 class Integer(fields.Integer):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, min_length=None, max_length=None, *args, **kwargs):
+        self.min_length = min_length
+        self.max_length = max_length
         kwargs.setdefault('error_messages', default_error_messages())
         super(Integer, self).__init__(*args, **kwargs)
+
+    def main_deserialize(self, value, attr, obj, **kwargs):
+        value = str(value)
+        if self.min_length and value < self.min_length:
+            raise self.make_error('min_length')
+        if self.max_length and value > self.max_length:
+            raise self.make_error('max_length')
+        return value
 
 
 @mm_plugin.map_to_openapi_type('number', 'float')
