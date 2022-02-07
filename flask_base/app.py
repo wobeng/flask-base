@@ -1,14 +1,13 @@
+from flask_base.exceptions import Error
+from werkzeug.middleware.proxy_fix import ProxyFix
+from flask_cors import CORS
+from flask import Flask, request, redirect, url_for
+from flasgger import Swagger, LazyString, LazyJSONEncoder
 from apispec.ext.marshmallow import openapi
 
 from flask_base.utils import OpenAPIConverter2
 
 openapi.OpenAPIConverter = OpenAPIConverter2
-from flasgger import Swagger, LazyString, LazyJSONEncoder
-from flask import Flask, request, redirect
-from flask_cors import CORS
-from werkzeug.middleware.proxy_fix import ProxyFix
-
-from flask_base.exceptions import Error
 
 
 class CloudfrontProxy(object):
@@ -52,12 +51,8 @@ def init_api(name, title='', uiversion=2, supports_credentials=False, origins='*
     # init swagger
     app.config['SWAGGER'] = dict(title=title, uiversion=uiversion)
     app.json_encoder = LazyJSONEncoder
-    template = dict(
-        host=LazyString(lambda: request.host),
-        schemes=[LazyString(lambda: 'https' if request.is_secure else 'http')]
-    )
     swagger_config = {'specs_route': '/apidocs'}
-    Swagger(app, config=swagger_config, merge=True, template=template)
+    Swagger(app, config=swagger_config, merge=True)
 
     if index_docs:
         @app.route('/')
