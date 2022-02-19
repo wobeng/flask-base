@@ -1,8 +1,8 @@
 from flask_base.exceptions import Error
 from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_cors import CORS
-from flask import Flask, request, redirect, url_for
-from flasgger import Swagger, LazyString, LazyJSONEncoder
+from flask import Flask, redirect
+from flasgger import Swagger, LazyJSONEncoder
 from apispec.ext.marshmallow import openapi
 
 from flask_base.utils import OpenAPIConverter2
@@ -17,12 +17,22 @@ class CloudfrontProxy(object):
         self.app = app
 
     def __call__(self, environ, start_response):
-        if 'HTTP_CLOUDFRONT_FORWARDED_PROTO' in environ:
-            environ['wsgi.url_scheme'] = environ['HTTP_CLOUDFRONT_FORWARDED_PROTO']
+        if "HTTP_CLOUDFRONT_FORWARDED_PROTO" in environ:
+            environ["wsgi.url_scheme"] = environ[
+                "HTTP_CLOUDFRONT_FORWARDED_PROTO"
+            ]
         return self.app(environ, start_response)
 
 
-def init_api(name, title='', uiversion=2, supports_credentials=False, origins='*', flask_vars=None, index_docs=True):
+def init_api(
+    name,
+    title="",
+    uiversion=2,
+    supports_credentials=False,
+    origins="*",
+    flask_vars=None,
+    index_docs=True,
+):
     # create an application instance.
     app = Flask(name, instance_relative_config=True)
 
@@ -31,17 +41,17 @@ def init_api(name, title='', uiversion=2, supports_credentials=False, origins='*
     app.wsgi_app = CloudfrontProxy(app.wsgi_app)
 
     # init cors
-    if origins != '*':
+    if origins != "*":
         if isinstance(origins, str):
             origins = [origins]
     CORS(app, origins=origins, supports_credentials=supports_credentials)
 
     # load flask environment in app
     flask_vars = flask_vars or {}
-    translate = {'True': True, 'False': False, 'None': None}
+    translate = {"True": True, "False": False, "None": None}
     for k, v in flask_vars.items():
-        if k.startswith('FLASK_'):
-            app.config[k.split('_')[-1]] = translate.get(v, v)
+        if k.startswith("FLASK_"):
+            app.config[k.split("_")[-1]] = translate.get(v, v)
 
     # handle error
     @app.errorhandler(Error)
@@ -49,13 +59,15 @@ def init_api(name, title='', uiversion=2, supports_credentials=False, origins='*
         return error.response()
 
     # init swagger
-    app.config['SWAGGER'] = dict(title=title, uiversion=uiversion)
+    app.config["SWAGGER"] = dict(title=title, uiversion=uiversion)
     app.json_encoder = LazyJSONEncoder
-    swagger_config = {'specs_route': '/apidocs'}
+    swagger_config = {"specs_route": "/apidocs"}
     Swagger(app, config=swagger_config, merge=True)
 
     if index_docs:
-        @app.route('/')
+
+        @app.route("/")
         def index():
-            return redirect('/apidocs')
+            return redirect("/apidocs")
+
     return app

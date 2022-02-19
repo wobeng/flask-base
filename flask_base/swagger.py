@@ -6,17 +6,22 @@ from apispec import APISpec
 from apispec.ext.marshmallow import MarshmallowPlugin
 from apispec_webframeworks.flask import FlaskPlugin
 
-from flask_base.utils import function_args, http_path, find_schemas, http_methods
+from flask_base.utils import (
+    function_args,
+    http_path,
+    find_schemas,
+    http_methods,
+)
 from py_tools.format import dumps, loads
 
 mm_plugin = MarshmallowPlugin()
 flask_plugin = FlaskPlugin()
 
 api_spec = APISpec(
-    title='',
-    version='1.0.0',
-    openapi_version='2.0',
-    plugins=(mm_plugin, flask_plugin)
+    title="",
+    version="1.0.0",
+    openapi_version="2.0",
+    plugins=(mm_plugin, flask_plugin),
 )
 
 
@@ -28,18 +33,18 @@ def generate_swagger(cls):
                 tmp = update_nested(orig_dict.get(key, {}), value)
                 orig_dict[key] = tmp
             elif isinstance(value, list):
-                orig_dict[key] = (orig_dict.get(key, []) + value)
+                orig_dict[key] = orig_dict.get(key, []) + value
             else:
                 orig_dict[key] = new_dict[key]
         return orig_dict
 
     def generate_spec(schema):
-        """Generate apispec """
+        """Generate apispec"""
         new_spec = deepcopy(api_spec)
         new_spec.title = class_name
-        new_spec.version = '1.0.0'
+        new_spec.version = "1.0.0"
         new_spec.components.schema(class_name, schema=schema)
-        return loads(dumps(new_spec.to_dict()['definitions']))
+        return loads(dumps(new_spec.to_dict()["definitions"]))
 
     def find_specs(schemas):
         """Generate apispec for parent and child schema"""
@@ -51,57 +56,84 @@ def generate_swagger(cls):
 
     for http_method in [attr for attr in dir(cls) if attr in http_methods]:
         view_func = getattr(cls, http_method)
-        class_name = cls.__name__ + '.' + http_method.title()
+        class_name = cls.__name__ + "." + http_method.title()
 
         """For each incoming data given, generate"""
         definitions = {}
         parameters = []
-        tags = getattr(cls, 'tags', [])
+        tags = getattr(cls, "tags", [])
 
         view_func_args = function_args(view_func)
 
         # add global arg if global args exist in class
-        if hasattr(cls, 'global_args'):
+        if hasattr(cls, "global_args"):
             for arg in cls.global_args:
                 if arg not in view_func_args:
                     view_func_args[arg] = cls.global_args[arg]
-                    view_func_args[arg]['scope'] = 'global'
+                    view_func_args[arg]["scope"] = "global"
 
-        for arg, val in {arg: val for arg, val in view_func_args.items() if arg in http_path}.items():
-            spec = find_specs(find_schemas(http_method.title(), cls.schema, path=arg))
-            if arg in ['body']:
+        for arg, val in {
+            arg: val for arg, val in view_func_args.items() if arg in http_path
+        }.items():
+            spec = find_specs(
+                find_schemas(http_method.title(), cls.schema, path=arg)
+            )
+            if arg in ["body"]:
                 parameter = {
-                    'name': arg,
-                    'in': 'body',
-                    'schema': {
-                        '$ref': '#/definitions/' + class_name
-                    }
+                    "name": arg,
+                    "in": "body",
+                    "schema": {"$ref": "#/definitions/" + class_name},
                 }
-                if 'required' in spec[class_name]:
-                    parameter['required'] = True
+                if "required" in spec[class_name]:
+                    parameter["required"] = True
                 parameters.append(parameter)
                 definitions.update(spec)
-            elif arg in ['view_arg', 'header', 'query']:
-                for f, v in spec[class_name]['properties'].items():
+            elif arg in ["view_arg", "header", "query"]:
+                for f, v in spec[class_name]["properties"].items():
                     parameter = dict(name=f, required=False)
-                    parameter['in'] = ('path' if arg == 'view_arg' else arg)
-                    parameter['type'] = v['type']
-                    if 'required' in spec[class_name] and f in spec[class_name]['required']:
-                        parameter['required'] = True
-                    if 'example' in spec[class_name]['properties'][f]:
-                        parameter['default'] = spec[class_name]['properties'][f]['example']
-                    if 'example' in spec[class_name]['properties'][f].get('metadata',{}):
-                        parameter['default'] = spec[class_name]['properties'][f]['metadata']['example']
+                    parameter["in"] = "path" if arg == "view_arg" else arg
+                    parameter["type"] = v["type"]
+                    if (
+                        "required" in spec[class_name]
+                        and f in spec[class_name]["required"]
+                    ):
+                        parameter["required"] = True
+                    if "example" in spec[class_name]["properties"][f]:
+                        parameter["default"] = spec[class_name]["properties"][
+                            f
+                        ]["example"]
+                    if "example" in spec[class_name]["properties"][f].get(
+                        "metadata", {}
+                    ):
+                        parameter["default"] = spec[class_name]["properties"][
+                            f
+                        ]["metadata"]["example"]
                     parameters.append(parameter)
 
-        output = list([class_name, class_name, '---'])
+        output = list([class_name, class_name, "---"])
         if view_func.__doc__:
             output[1] = view_func.__doc__
-        output.append(yaml.safe_dump({'tags': tags}, allow_unicode=True, default_flow_style=False))
-        output.append(yaml.safe_dump({'parameters': parameters}, allow_unicode=True, default_flow_style=False))
+        output.append(
+            yaml.safe_dump(
+                {"tags": tags}, allow_unicode=True, default_flow_style=False
+            )
+        )
+        output.append(
+            yaml.safe_dump(
+                {"parameters": parameters},
+                allow_unicode=True,
+                default_flow_style=False,
+            )
+        )
         if definitions:
-            output.append(yaml.safe_dump({'definitions': definitions}, allow_unicode=True, default_flow_style=False))
+            output.append(
+                yaml.safe_dump(
+                    {"definitions": definitions},
+                    allow_unicode=True,
+                    default_flow_style=False,
+                )
+            )
 
-        setattr(getattr(cls, http_method), '__doc__', '\n'.join(output))
+        setattr(getattr(cls, http_method), "__doc__", "\n".join(output))
 
     return cls
