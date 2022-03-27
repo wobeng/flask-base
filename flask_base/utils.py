@@ -6,6 +6,7 @@ from collections import OrderedDict
 
 from apispec.ext.marshmallow import openapi
 from flask import request
+from py_tools.logging import get_logger
 
 http_path = ["path", "body", "query", "header", "view_arg"]
 http_methods = [
@@ -44,13 +45,7 @@ def function_args(func):
         except IndexError:
             typ = None
         response[k] = {"default": default, "type": typ, "scope": "local"}
-    if any(
-        [
-            arg
-            for arg in response.keys()
-            if arg not in http_path and arg != "self"
-        ]
-    ):
+    if any([arg for arg in response.keys() if arg not in http_path and arg != "self"]):
         response["view_arg"] = {"default": None, "type": dict}
     return response
 
@@ -110,6 +105,8 @@ def import_submodules(package, recursive=True):
     :type package: str | module
     :rtype: dict[str, types.ModuleType]
     """
+    logger = get_logger(package, log_console=True, log_file=False)
+
     if isinstance(package, str):
         package = importlib.import_module(package)
     results = {}
@@ -118,8 +115,8 @@ def import_submodules(package, recursive=True):
         try:
             results[full_name] = importlib.import_module(full_name)
         except BaseException as e:
-            print(full_name, e)
-            print(traceback.print_exc())
+            logger.critical(full_name, e)
+            logger.critical(traceback.print_exc())
         if recursive and is_pkg:
             results.update(import_submodules(full_name))
     return results
