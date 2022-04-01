@@ -6,7 +6,7 @@ from collections import OrderedDict
 
 from apispec.ext.marshmallow import openapi
 from flask import request
-from py_tools.logging import get_logger
+from py_tools.pylog import get_logger
 
 http_path = ["path", "body", "query", "header", "view_arg"]
 http_methods = [
