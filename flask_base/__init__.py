@@ -17,3 +17,7 @@ __version__ = "1.0.0"
 __license__ = "Apache 2.0"
 __copyright__ = "Copyright Welby Obeng 2017 - present"
 __url__ = "https://github.com/wobeng/flask-base"
+
+from py_tools.pylog import get_logger
+
+logger = get_logger("main", log_console=True, log_file=False)
