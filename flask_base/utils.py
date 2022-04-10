@@ -105,7 +105,7 @@ def import_submodules(package, recursive=True):
     :type package: str | module
     :rtype: dict[str, types.ModuleType]
     """
-    logger = get_logger(package, log_console=True, log_file=False)
+    logger = get_logger(package)
 
     if isinstance(package, str):
         package = importlib.import_module(package)

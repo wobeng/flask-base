@@ -20,4 +20,4 @@ __url__ = "https://github.com/wobeng/flask-base"
 
 from py_tools.pylog import get_logger
 
-logger = get_logger("main", log_console=True, log_file=False)
+logger = get_logger("flask-base")
