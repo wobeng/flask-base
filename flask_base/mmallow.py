@@ -96,6 +96,13 @@ def datetime_utc(dt=None):
     return dt.replace(tzinfo=UTC)
 
 
+def find_replace_all(str, replace_str, find_list=None):
+    find_list = find_list or [" ", "&", "'", "-", "_"]
+    for item in find_list:
+        str = str.replace(item, replace_str)
+    return str
+
+
 def error_msg(field):
     if os.environ.get("MMALLOW_ERROR_EXPAND", "true") == "true":
         return field[1]
@@ -137,9 +144,7 @@ def validate_username(value, min_length=None):
     return None, None
 
 
-def _date_time(
-    self, value, attr, obj, validator_failed, date=False, iso_format=False
-):
+def _date_time(self, value, attr, obj, validator_failed, date=False, iso_format=False):
     if not self.min_length and value == "":
         return value
     try:
@@ -153,9 +158,7 @@ def _date_time(
             # set dates
             duration = dict()
             duration[attr] = dt
-            other_date = (
-                "end_date" if attr.startswith("start_") else "start_date"
-            )
+            other_date = "end_date" if attr.startswith("start_") else "start_date"
             duration[other_date] = dateutil.parser.parse(obj[other_date])
             if date:
                 duration[other_date] = duration[other_date].date()
@@ -240,6 +243,7 @@ class String(Fields, fields.String):
         min_length=1,
         max_length=20000,
         replace_space=False,
+        friendly_name=False,
         lower=False,
         capitalize=False,
         post_validate=None,
@@ -249,6 +253,7 @@ class String(Fields, fields.String):
         self.min_length = min_length
         self.max_length = max_length
         self.replace_space = replace_space
+        self.friendly_name = friendly_name
         self.lower = lower
         self.capitalize = capitalize
         self.post_validate = post_validate
@@ -267,6 +272,9 @@ class String(Fields, fields.String):
             value = value.lower()
         if self.capitalize:
             value = value.capitalize()
+
+        if self.friendly_name and not find_replace_all(value, "").isalnum():
+            raise self.make_error("validator_failed")
         return value
 
 
@@ -297,9 +305,7 @@ class Recaptcha(String):
 class Password(String):
     def __init__(self, *args, **kwargs):
         regex = r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$"
-        self.regex = (
-            re.compile(regex, 0) if isinstance(regex, (str, bytes)) else regex
-        )
+        self.regex = re.compile(regex, 0) if isinstance(regex, (str, bytes)) else regex
         super(Password, self).__init__(*args, **kwargs)
         self.error_messages["validator_failed"] = error_msg(FIELD_PASSWORD)
 
@@ -401,9 +407,7 @@ class DateTime(String):
 class FutureDateTime(DateTime):
     def __init__(self, *args, **kwargs):
         super(FutureDateTime, self).__init__(*args, **kwargs)
-        self.error_messages["validator_failed"] = error_msg(
-            FIELD_FUTURE_DATETIME
-        )
+        self.error_messages["validator_failed"] = error_msg(FIELD_FUTURE_DATETIME)
 
     def post_deserialize(self, value, attr, obj, **kwargs):
         future = super(FutureDateTime, self)._deserialize(value, attr, obj)
@@ -531,9 +535,7 @@ class List(Fields, fields.List):
 
 @mm_plugin.map_to_openapi_type("array", None)
 class Set(List):
-    def __init__(
-        self, cls_or_instance, min_length=1, max_length=20000, **kwargs
-    ):
+    def __init__(self, cls_or_instance, min_length=1, max_length=20000, **kwargs):
         super(Set, self).__init__(
             cls_or_instance, True, min_length, max_length, **kwargs
         )
@@ -645,17 +647,13 @@ class DictFunction(Function):
 
 
 class NestFunction(Nested):
-    def __init__(
-        self, nested, serialize=None, deserialize=None, *args, **kwargs
-    ):
+    def __init__(self, nested, serialize=None, deserialize=None, *args, **kwargs):
         self.serialize_func = serialize
         self.deserialize_func = deserialize
         super(NestFunction, self).__init__(nested, *args, **kwargs)
 
     def _deserialize(self, value, attr, obj, **kwargs):
-        validated_data = super(NestFunction, self)._deserialize(
-            value, attr, obj
-        )
+        validated_data = super(NestFunction, self)._deserialize(value, attr, obj)
         post_validated_data = self.deserialize_func(validated_data)
         if not post_validated_data:
             raise self.make_error("validator_failed")
@@ -664,9 +662,7 @@ class NestFunction(Nested):
 
 class DynamicNested(Nested):
     def __init__(self, nested, key_type, *args, **kwargs):
-        super(DynamicNested, self).__init__(
-            nested, unknown=INCLUDE, *args, **kwargs
-        )
+        super(DynamicNested, self).__init__(nested, unknown=INCLUDE, *args, **kwargs)
         self.key_type = key_type
         self.nested_schema = Nested(nested, unknown=INCLUDE)
 
