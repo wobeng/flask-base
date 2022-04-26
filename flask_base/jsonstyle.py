@@ -45,10 +45,10 @@ class GoogleJsonStyle:
                     "{}={}".format(key, val[0]) for key, val in query.items()
                 )
                 query = "&" + query if query else query  # add & if not empty
-                start = urlencode(
-                    {"start_key": json.dumps(data.pop("last_key"))}
-                )
+                start_key = json.dumps(data.pop("last_key"))
+                start = urlencode({"start_key": start_key})
                 data["nextLink"] = request.base_url + "?" + start + query
+                data["startKey"] = start_key
         return data
 
     @staticmethod
