@@ -158,7 +158,8 @@ def _date_time(self, value, attr, obj, validator_failed, date=False, iso_format=
             # set dates
             duration = dict()
             duration[attr] = dt
-            other_date = "end_date" if attr.startswith("start_") else "start_date"
+            other_date = "end_date" if attr.startswith(
+                "start_") else "start_date"
             duration[other_date] = dateutil.parser.parse(obj[other_date])
             if date:
                 duration[other_date] = duration[other_date].date()
@@ -220,15 +221,15 @@ class Fields:
             if method:
                 value = method(value, attr, obj, **kwargs)
 
+        # exit if field is allowed to be falsy
+        if getattr(self, "min_length", 1) == 0 or getattr(self, "allow_empty", 1) is True:
+            return value
+
         if self.post_validate:
             try:
                 value = self.post_validate(value)
                 if not value:
-                    if (
-                        getattr(self, "min_length", 1) != 0
-                        and getattr(self, "allow_empty", False) is False
-                    ):
-                        raise
+                    raise
             except BaseException as e:
                 error = self.make_error("validator_failed")
                 error.messages.append(str(e))
@@ -305,7 +306,8 @@ class Recaptcha(String):
 class Password(String):
     def __init__(self, *args, **kwargs):
         regex = r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$"
-        self.regex = re.compile(regex, 0) if isinstance(regex, (str, bytes)) else regex
+        self.regex = re.compile(regex, 0) if isinstance(
+            regex, (str, bytes)) else regex
         super(Password, self).__init__(*args, **kwargs)
         self.error_messages["validator_failed"] = error_msg(FIELD_PASSWORD)
 
@@ -407,7 +409,8 @@ class DateTime(String):
 class FutureDateTime(DateTime):
     def __init__(self, *args, **kwargs):
         super(FutureDateTime, self).__init__(*args, **kwargs)
-        self.error_messages["validator_failed"] = error_msg(FIELD_FUTURE_DATETIME)
+        self.error_messages["validator_failed"] = error_msg(
+            FIELD_FUTURE_DATETIME)
 
     def post_deserialize(self, value, attr, obj, **kwargs):
         future = super(FutureDateTime, self)._deserialize(value, attr, obj)
@@ -578,12 +581,15 @@ class Float(fields.Float):
 
 
 class Nested(Fields, fields.Nested):
-    def __init__(self, *args, post_validate=None, **kwargs):
+    def __init__(self, *args, post_validate=None, allow_empty=False, **kwargs):
         self.post_validate = post_validate
+        self.allow_empty = allow_empty
         kwargs.setdefault("error_messages", default_error_messages())
         super(Nested, self).__init__(*args, **kwargs)
 
     def main_deserialize(self, value, attr, obj, **kwargs):
+        if self.allow_empty and not value:
+            return value
         value = fields.Nested._deserialize(self, value, attr, obj, **kwargs)
         return value
 
@@ -653,7 +659,8 @@ class NestFunction(Nested):
         super(NestFunction, self).__init__(nested, *args, **kwargs)
 
     def _deserialize(self, value, attr, obj, **kwargs):
-        validated_data = super(NestFunction, self)._deserialize(value, attr, obj)
+        validated_data = super(
+            NestFunction, self)._deserialize(value, attr, obj)
         post_validated_data = self.deserialize_func(validated_data)
         if not post_validated_data:
             raise self.make_error("validator_failed")
@@ -662,7 +669,8 @@ class NestFunction(Nested):
 
 class DynamicNested(Nested):
     def __init__(self, nested, key_type, *args, **kwargs):
-        super(DynamicNested, self).__init__(nested, unknown=INCLUDE, *args, **kwargs)
+        super(DynamicNested, self).__init__(
+            nested, unknown=INCLUDE, *args, **kwargs)
         self.key_type = key_type
         self.nested_schema = Nested(nested, unknown=INCLUDE)
 
