@@ -97,7 +97,7 @@ def datetime_utc(dt=None):
 
 
 def find_replace_all(str, replace_str, find_list=None):
-    find_list = find_list or [" ", "&", "'", "-", "_", "(", ")"]
+    find_list = find_list or [" ", "&", "'", "-", "_", "(", ")", "."]
     for item in find_list:
         str = str.replace(item, replace_str)
     return str
