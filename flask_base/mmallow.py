@@ -96,9 +96,8 @@ def datetime_utc(dt=None):
     return dt.replace(tzinfo=UTC)
 
 
-def find_replace_all(str, replace_str, find_list=None):
-    find_list = find_list or [" ", "&", "'", "-", "_", "(", ")", ".", "/"]
-    for item in find_list:
+def find_replace_all(str, replace_str, allowed_chars):
+    for item in allowed_chars:
         str = str.replace(item, replace_str)
     return str
 
@@ -243,8 +242,8 @@ class String(Fields, fields.String):
         self,
         min_length=1,
         max_length=20000,
-        replace_space=False,
         friendly_name=False,
+        allow_chars=None,
         lower=False,
         capitalize=False,
         post_validate=None,
@@ -253,11 +252,12 @@ class String(Fields, fields.String):
     ):
         self.min_length = min_length
         self.max_length = max_length
-        self.replace_space = replace_space
         self.friendly_name = friendly_name
         self.lower = lower
         self.capitalize = capitalize
         self.post_validate = post_validate
+        self.allow_chars = allow_chars or [
+            " ", "&", "\'", "-", "_", "(", ")", ".", "/"]
         kwargs.setdefault("error_messages", default_error_messages())
         super(String, self).__init__(*args, **kwargs)
 
@@ -267,16 +267,20 @@ class String(Fields, fields.String):
             raise self.make_error("min_length")
         if len(value) > self.max_length:
             raise self.make_error("max_length")
-        if self.replace_space:
-            value = value.replace(" ", "-")
         if self.lower:
             value = value.lower()
         if self.capitalize:
             value = value.capitalize()
-
-        if self.friendly_name and not find_replace_all(value, "").isalnum():
+        if self.friendly_name and not find_replace_all(value, "", self.allow_chars).isalnum():
             raise self.make_error("validator_failed")
         return value
+
+
+class StringTag(String):
+    def __init__(self, allow_space=False, *args, **kwargs):
+        allow_chars = [" "] if allow_space else []
+        super(StringTag, self).__init__(*args, **kwargs,
+                                        friendly_name=True, allow_chars=allow_chars)
 
 
 class Recaptcha(String):
