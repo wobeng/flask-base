@@ -279,6 +279,7 @@ class String(Fields, fields.String):
 class StringTag(String):
     def __init__(self, allow_space=False, *args, **kwargs):
         allow_chars = [" "] if allow_space else []
+        allow_chars.append("-")
         super(StringTag, self).__init__(*args, **kwargs,
                                         friendly_name=True, allow_chars=allow_chars)
 
