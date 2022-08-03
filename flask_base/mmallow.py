@@ -45,7 +45,7 @@ FIELD_SPACE_TAG = ("FieldTagSpaceTypeException",
                    "This field is invalid. Only alphanumeric, dash and space are allowed")
 
 FIELD_FRIENDLY_NAME = ("FieldFriendlyNameTypeException",
-                       "This field is invalid. Only alphanumeric, space and special symbols {} are allowed".format(",".join(friendly_allowed_chars)))
+                       "This field is invalid. Only alphanumeric, space and special symbols {} are allowed".format(" ".join(friendly_allowed_chars)))
 FIELD_RECAPTCHA = (
     "FieldRecaptchaTypeException",
     "Are you human? Refresh page and submit again",
