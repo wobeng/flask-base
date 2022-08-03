@@ -19,6 +19,8 @@ from pytz import UTC
 
 from flask_base.swagger import mm_plugin
 
+friendly_allowed_chars = [" ", "&", "\'", "-", "_", "(", ")", ".", "/"]
+
 FIELD_NULL = "FieldNotNullException", "This field cannot be empty"
 FIELD_VALIDATOR_FAILED = (
     "FieldValidatorFailedException",
@@ -35,6 +37,15 @@ FIELD_MIN_LENGTH = (
     "FieldMinLengthException",
     "This field is too short or lower than expected",
 )
+FIELD_TAG = ("FieldTagTypeException",
+             "This field is invalid. Only alphanumeric and dash are allowed")
+FIELD_UNIQUE_TAG = ("FieldTagUniqueTypeException",
+                    "This field is invalid. Only alphanumeric, dash, and forward slash are allowed")
+FIELD_SPACE_TAG = ("FieldTagSpaceTypeException",
+                   "This field is invalid. Only alphanumeric, dash and space are allowed")
+
+FIELD_FRIENDLY_NAME = ("FieldFriendlyNameTypeException",
+                       "This field is invalid. Only alphanumeric, space and special symbols {} are allowed".format(",".join(friendly_allowed_chars)))
 FIELD_RECAPTCHA = (
     "FieldRecaptchaTypeException",
     "Are you human? Refresh page and submit again",
@@ -69,11 +80,11 @@ FIELD_FUTURE_DATETIME = (
     "Future datetime is invalid. Datetime should be greater than today's datetime.",
 )
 FIELD_START_END_DATE = (
-    "StartEndDateException",
+    "FieldStartEndDateException",
     "Start date is invalid. Example: mm/dd/yyyy.",
 )
 FIELD_START_END_DATETIME = (
-    "StartEndDateException",
+    "FieldStartEndDateException",
     "Start date is invalid. Example: mm/dd/yyyy-00:00:00.",
 )
 FIELD_EMAIL = (
@@ -256,10 +267,11 @@ class String(Fields, fields.String):
         self.lower = lower
         self.capitalize = capitalize
         self.post_validate = post_validate
-        self.allow_chars = allow_chars or [
-            " ", "&", "\'", "-", "_", "(", ")", ".", "/"]
+        self.allow_chars = allow_chars or friendly_allowed_chars
         kwargs.setdefault("error_messages", default_error_messages())
         super(String, self).__init__(*args, **kwargs)
+        self.error_messages["friendly_name_validator_failed"] = error_msg(
+            FIELD_FRIENDLY_NAME)
 
     def main_deserialize(self, value, attr, obj, **kwargs):
         value = str(value)
@@ -272,16 +284,32 @@ class String(Fields, fields.String):
         if self.capitalize:
             value = value.capitalize()
         if self.friendly_name and not find_replace_all(value, "", self.allow_chars).isalnum():
-            raise self.make_error("validator_failed")
+            raise self.make_error("friendly_name_validator_failed")
         return value
 
 
 class StringTag(String):
-    def __init__(self, allow_space=False, *args, **kwargs):
-        allow_chars = [" "] if allow_space else []
-        allow_chars.append("-")
+    def __init__(self, *args, **kwargs):
+        allow_chars = ["-"]
         super(StringTag, self).__init__(*args, **kwargs,
                                         friendly_name=True, allow_chars=allow_chars)
+        self.error_messages["validator_failed"] = error_msg(FIELD_TAG)
+
+
+class StringUniqueTag(String):
+    def __init__(self, *args, **kwargs):
+        allow_chars = ["/", "-"]
+        super(StringUniqueTag, self).__init__(*args, **kwargs, lower=True,
+                                              friendly_name=True, allow_chars=allow_chars)
+        self.error_messages["validator_failed"] = error_msg(FIELD_UNIQUE_TAG)
+
+
+class StringSpaceTag(String):
+    def __init__(self, *args, **kwargs):
+        allow_chars = [" ", "-"]
+        super(StringSpaceTag, self).__init__(*args, **kwargs,
+                                             friendly_name=True, allow_chars=allow_chars)
+        self.error_messages["validator_failed"] = error_msg(FIELD_SPACE_TAG)
 
 
 class Recaptcha(String):
