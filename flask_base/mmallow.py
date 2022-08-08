@@ -293,7 +293,8 @@ class StringTag(String):
         allow_chars = ["-"]
         super(StringTag, self).__init__(*args, **kwargs,
                                         friendly_name=True, allow_chars=allow_chars)
-        self.error_messages["validator_failed"] = error_msg(FIELD_TAG)
+        self.error_messages["friendly_name_validator_failed"] = error_msg(
+            FIELD_TAG)
 
 
 class StringUniqueTag(String):
@@ -301,7 +302,8 @@ class StringUniqueTag(String):
         allow_chars = ["/", "-"]
         super(StringUniqueTag, self).__init__(*args, **kwargs, lower=True,
                                               friendly_name=True, allow_chars=allow_chars)
-        self.error_messages["validator_failed"] = error_msg(FIELD_UNIQUE_TAG)
+        self.error_messages["friendly_name_validator_failed"] = error_msg(
+            FIELD_UNIQUE_TAG)
 
 
 class StringSpaceTag(String):
@@ -309,7 +311,8 @@ class StringSpaceTag(String):
         allow_chars = [" ", "-"]
         super(StringSpaceTag, self).__init__(*args, **kwargs,
                                              friendly_name=True, allow_chars=allow_chars)
-        self.error_messages["validator_failed"] = error_msg(FIELD_SPACE_TAG)
+        self.error_messages["friendly_name_validator_failed"] = error_msg(
+            FIELD_SPACE_TAG)
 
 
 class Recaptcha(String):
