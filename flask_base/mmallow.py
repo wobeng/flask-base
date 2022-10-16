@@ -338,7 +338,7 @@ class Recaptcha(String):
         return r["success"]
 
 
-@mm_plugin.map_to_openapi_type("string", "	password")
+@mm_plugin.map_to_openapi_type("string", "password")
 class Password(String):
     def __init__(self, *args, **kwargs):
         regex = r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$"
