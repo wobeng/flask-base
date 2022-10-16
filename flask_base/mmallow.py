@@ -338,7 +338,6 @@ class Recaptcha(String):
         return r["success"]
 
 
-@mm_plugin.map_to_openapi_type("string", "password")
 class Password(String):
     def __init__(self, *args, **kwargs):
         regex = r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$"
@@ -351,6 +350,9 @@ class Password(String):
         if self.regex.match(value) is None:
             raise self.make_error("validator_failed")
         return bcrypt.hashpw(value.encode("utf-8"), bcrypt.gensalt()).decode()
+
+
+mm_plugin.map_to_openapi_type(Password, "string", "password")
 
 
 class Cidr(String):
@@ -404,7 +406,6 @@ class ParseQueryString(String):
             raise self.make_error("validator_failed")
 
 
-@mm_plugin.map_to_openapi_type("string", "date")
 class Date(String):
     def __init__(self, iso_format=True, *args, **kwargs):
         super(Date, self).__init__(*args, **kwargs)
@@ -423,7 +424,9 @@ class Date(String):
         )
 
 
-@mm_plugin.map_to_openapi_type("string", "date-time")
+mm_plugin.map_to_openapi_type(Date, "string", "date")
+
+
 class DateTime(String):
     def __init__(self, iso_format=False, *args, **kwargs):
         super(DateTime, self).__init__(*args, **kwargs)
@@ -441,7 +444,9 @@ class DateTime(String):
         )
 
 
-@mm_plugin.map_to_openapi_type("string", "date-time")
+mm_plugin.map_to_openapi_type(DateTime, "string", "date-time")
+
+
 class FutureDateTime(DateTime):
     def __init__(self, *args, **kwargs):
         super(FutureDateTime, self).__init__(*args, **kwargs)
@@ -456,7 +461,9 @@ class FutureDateTime(DateTime):
         return future
 
 
-@mm_plugin.map_to_openapi_type("string", "email")
+mm_plugin.map_to_openapi_type(FutureDateTime, "string", "date-time")
+
+
 class Email(String):
     def __init__(self, *args, **kwargs):
         super(Email, self).__init__(lower=True, *args, **kwargs)
@@ -469,7 +476,9 @@ class Email(String):
         return output
 
 
-@mm_plugin.map_to_openapi_type("string", "url")
+mm_plugin.map_to_openapi_type(Email, "string", "email")
+
+
 class Url(String):
     def __init__(self, *args, **kwargs):
         super(Url, self).__init__(lower=True, *args, **kwargs)
@@ -483,7 +492,9 @@ class Url(String):
         return value
 
 
-@mm_plugin.map_to_openapi_type("object", None)
+mm_plugin.map_to_openapi_type(Url, "string", "url")
+
+
 class Dict(Fields, fields.Dict):
     def __init__(self, allow_empty=False, post_validate=None, *args, **kwargs):
         self.allow_empty = allow_empty
@@ -497,6 +508,9 @@ class Dict(Fields, fields.Dict):
         if not value:
             raise self.make_error("validator_failed")
         return fields.Dict._deserialize(self, value, attr, data)
+
+
+mm_plugin.map_to_openapi_type(Dict, "object", None)
 
 
 class JsonSchema(Dict):
@@ -536,7 +550,6 @@ class Username(String):
         return output
 
 
-@mm_plugin.map_to_openapi_type("array", None)
 class List(Fields, fields.List):
     def __init__(
         self,
@@ -572,7 +585,9 @@ class List(Fields, fields.List):
         return value
 
 
-@mm_plugin.map_to_openapi_type("array", None)
+mm_plugin.map_to_openapi_type(List, "array", None)
+
+
 class Set(List):
     def __init__(self, cls_or_instance, min_length=1, max_length=20000, **kwargs):
         super(Set, self).__init__(
@@ -585,14 +600,18 @@ class Set(List):
         return value
 
 
-@mm_plugin.map_to_openapi_type("boolean", None)
+mm_plugin.map_to_openapi_type(Set, "array", None)
+
+
 class Boolean(fields.Boolean):
     def __init__(self, *args, **kwargs):
         kwargs.setdefault("error_messages", default_error_messages())
         super(Boolean, self).__init__(*args, **kwargs)
 
 
-@mm_plugin.map_to_openapi_type("integer", "int32")
+mm_plugin.map_to_openapi_type(Boolean, "boolean", None)
+
+
 class Integer(fields.Integer):
     def __init__(self, min_length=None, max_length=None, *args, **kwargs):
         self.min_length = min_length
@@ -609,11 +628,16 @@ class Integer(fields.Integer):
         return value
 
 
-@mm_plugin.map_to_openapi_type("number", "float")
+mm_plugin.map_to_openapi_type(Integer, "integer", "int32")
+
+
 class Float(fields.Float):
     def __init__(self, *args, **kwargs):
         kwargs.setdefault("error_messages", default_error_messages())
         super(Float, self).__init__(*args, **kwargs)
+
+
+mm_plugin.map_to_openapi_type(Float, "number", "float")
 
 
 class Nested(Fields, fields.Nested):
@@ -676,16 +700,20 @@ class Function(fields.Field):
         raise self.make_error("validator_failed")
 
 
-@mm_plugin.map_to_openapi_type("string", None)
 class StringFunction(Function):
     def __init__(self, *args, **kwargs):
         super(StringFunction, self).__init__(input_type=str, *args, **kwargs)
 
 
-@mm_plugin.map_to_openapi_type("object", None)
+mm_plugin.map_to_openapi_type(StringFunction, "string", None)
+
+
 class DictFunction(Function):
     def __init__(self, *args, **kwargs):
         super(DictFunction, self).__init__(input_type=dict, *args, **kwargs)
+
+
+mm_plugin.map_to_openapi_type(DictFunction, "object", None)
 
 
 class NestFunction(Nested):
