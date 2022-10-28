@@ -16,6 +16,7 @@ from more_itertools import unique_everseen
 from netaddr import IPNetwork
 from netaddr.core import AddrFormatError
 from pytz import UTC
+import socket
 
 from flask_base.swagger import mm_plugin
 
@@ -478,10 +479,15 @@ class Domain(String):
             return value
         if not validators.domain(value):
             raise self.make_error("validator_failed")
+        try:
+            socket.gethostbyname(value)
+        except socket.gaierror:
+            raise self.make_error("validator_failed")
         return value
 
 
 mm_plugin.map_to_openapi_type(Domain, "string", "domain")
+
 
 class Email(String):
     def __init__(self, *args, **kwargs):
