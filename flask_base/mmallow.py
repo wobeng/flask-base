@@ -87,13 +87,17 @@ FIELD_START_END_DATETIME = (
     "FieldStartEndDateException",
     "Start date is invalid. Example: mm/dd/yyyy-00:00:00.",
 )
+FIELD_DOMAIN = (
+    "FieldDomainTypeException",
+    "Domain is invalid. Example: example.com",
+)
 FIELD_EMAIL = (
     "FieldEmailTypeException",
     "Email is invalid. Example: username@example.com.",
 )
 FIELD_URL = (
     "FieldUrlTypeException",
-    "Url is is invalid. Example: http://example.com",
+    "Url is invalid. Example: http://example.com",
 )
 FIELD_USERNAME = (
     "FieldUsernameTypeException",
@@ -463,6 +467,21 @@ class FutureDateTime(DateTime):
 
 mm_plugin.map_to_openapi_type(FutureDateTime, "string", "date-time")
 
+
+class Domain(String):
+    def __init__(self, *args, **kwargs):
+        super(Domain, self).__init__(lower=True, *args, **kwargs)
+        self.error_messages["validator_failed"] = error_msg(FIELD_DOMAIN)
+
+    def post_deserialize(self, value, attr, obj, **kwargs):
+        if not self.min_length and value == "":
+            return value
+        if not validators.domain(value):
+            raise self.make_error("validator_failed")
+        return value
+
+
+mm_plugin.map_to_openapi_type(Domain, "string", "domain")
 
 class Email(String):
     def __init__(self, *args, **kwargs):
