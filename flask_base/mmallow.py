@@ -1,6 +1,6 @@
 import os
 import re
-from datetime import datetime
+from py_tools.date import datetime_utc
 from urllib.parse import parse_qs
 
 import bcrypt
@@ -108,7 +108,7 @@ FIELD_USERNAME = (
 
 def datetime_utc(dt=None):
     if not dt:
-        dt = datetime.utcnow()
+        dt = datetime_utc()
     return dt.replace(tzinfo=UTC)
 
 
