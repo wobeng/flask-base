@@ -392,6 +392,8 @@ class Rrule(String):
         self.error_messages["validator_failed"] = error_msg(FIELD_RRULE)
 
     def post_deserialize(self, value, attr, obj, **kwargs):
+        value = value.replace("SECONDLY", "HOURLY").replace(
+            "MINUTELY", "HOURLY")
         try:
             rrulestr(value)
             return value
