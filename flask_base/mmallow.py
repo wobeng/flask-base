@@ -279,7 +279,7 @@ class String(Fields, fields.String):
             FIELD_FRIENDLY_NAME)
 
     def main_deserialize(self, value, attr, obj, **kwargs):
-        value = str(value)
+        value = str(value).strip()
         if len(value) < self.min_length:
             raise self.make_error("min_length")
         if len(value) > self.max_length:
