@@ -10,7 +10,7 @@ setup(
     author_email="wobeng@yblew.com",
     description="flask base app",
     install_requires=[
-        "Flask",
+        "Flask==2.2.2",
         "marshmallow",
         "simplejson",
         "flasgger",
