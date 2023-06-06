@@ -13,7 +13,7 @@ setup(
         "Flask==2.2.2",
         "marshmallow",
         "simplejson",
-        "flasgger",
+        "flasgger==0.9.5",
         "apispec",
         "apispec-webframeworks",
         "PyYAML",
