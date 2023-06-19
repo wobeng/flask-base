@@ -93,6 +93,8 @@ def generate_cookie(
 
     if samesite and secure:
         cookie["samesite"] = "Strict"
+    else:
+        cookie["samesite"] = "Lax"
     # elif referer.startswith('http://localhost'):
     #   cookie['samesite'] = 'None'
     return cookie
