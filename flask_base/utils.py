@@ -70,7 +70,6 @@ def generate_cookie(
     name,
     content="",
     max_age=0,
-    allowed_domains=None,
     http_only=True,
     samesite=True,
 ):
@@ -83,13 +82,6 @@ def generate_cookie(
         "max_age": max_age,
         "secure": secure,
     }
-
-    allowed_domains = allowed_domains.split(",")
-    domain = allowed_domains[0]
-    for allowed_domain in allowed_domains:
-        if allowed_domain in str(request.host):
-            domain = allowed_domain
-    cookie["domain"] = "." + domain
 
     if samesite and secure:
         cookie["samesite"] = "Strict"
