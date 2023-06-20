@@ -21,12 +21,14 @@ class Base(MethodView):
         name,
         content="",
         max_age=0,
+        trusted_domains=None,
         http_only=True,
         samesite=True,
     ):
+        trusted_domains = trusted_domains or os.environ["TRUSTED_DOMAINS"]
         self.cookies.append(
             generate_cookie(
-                name, content, max_age, http_only, samesite
+                name, content, max_age, trusted_domains, http_only, samesite
             )
         )
 
