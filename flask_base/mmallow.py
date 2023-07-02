@@ -15,7 +15,6 @@ from marshmallow import fields, validate, INCLUDE
 from more_itertools import unique_everseen
 from netaddr import IPNetwork
 from netaddr.core import AddrFormatError
-from pytz import UTC
 import socket
 
 from flask_base.swagger import mm_plugin
@@ -104,13 +103,6 @@ FIELD_USERNAME = (
     "FieldUsernameTypeException",
     "Username is invalid. Example: username@example.com or +12035556677.",
 )
-
-
-def datetime_utc(dt=None):
-    if not dt:
-        dt = datetime_utc()
-    return dt.replace(tzinfo=UTC)
-
 
 def find_replace_all(str, replace_str, allowed_chars):
     for item in allowed_chars:
