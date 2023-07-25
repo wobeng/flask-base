@@ -595,7 +595,7 @@ class List(Fields, fields.List):
             value = value.split(",")
         value = list(value)
         if self.min_length == 0 and not value:
-            return value
+            return None
         if not value:
             raise self.make_error("validator_failed")
         value = fields.List._deserialize(self, value, attr, data, **kwargs)
