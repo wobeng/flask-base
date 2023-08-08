@@ -593,16 +593,18 @@ class List(Fields, fields.List):
             raise self.make_error("max_length")
         if isinstance(value, str):
             value = value.split(",")
+
         value = list(value)
-        if self.min_length == 0 and not value:
-            return None
-        if not value:
-            raise self.make_error("validator_failed")
-        value = fields.List._deserialize(self, value, attr, data, **kwargs)
+
         if self.remove_duplicates:
             value = list(unique_everseen(value))
-        return value
 
+        return fields.List._deserialize(self, value, attr, data, **kwargs)
+    
+    def post_deserialize(self, value, attr, data, **kwargs):
+        if self.min_length == 0 and not value:
+            return None
+        return value
 
 mm_plugin.map_to_openapi_type(List, "array", None)
 
