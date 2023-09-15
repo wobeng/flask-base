@@ -600,7 +600,7 @@ class List(Fields, fields.List):
             value = list(unique_everseen(value))
 
         return fields.List._deserialize(self, value, attr, data, **kwargs)
-    
+
     def post_deserialize(self, value, attr, data, **kwargs):
         if self.min_length == 0 and not value:
             return None
