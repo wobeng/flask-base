@@ -1,12 +1,24 @@
 import json
 from collections import OrderedDict
-from urllib.parse import urlencode
 
-from flask import request, g
+from flask import request
 from werkzeug.urls import iri_to_uri
-
+import base64
 from py_tools.format import dumps
+import gzip
 
+def encode_json(data):
+    json_string = json.dumps(data, separators=(',', ':'))
+    compressed_data = gzip.compress(json_string.encode())
+    base64_url_safe = base64.urlsafe_b64encode(compressed_data).decode()
+    return base64_url_safe
+
+def decode_json(data):
+    decoded_bytes = base64.urlsafe_b64decode(data.encode())
+    decoded_bytes = gzip.decompress(decoded_bytes)
+    decoded_json_data = decoded_bytes.decode()
+    original_data = json.loads(decoded_json_data)
+    return original_data
 
 class GoogleJsonStyle:
     def __init__(self, parent, data, msg=None):
@@ -39,15 +51,13 @@ class GoogleJsonStyle:
     def add_next_link(data):
         if "items" in data:
             if "last_key" in data:
-                query = dict(g.incoming_data.get("query", {}))
-                query.pop("start_key", None)  # delete old start key
-                query = "&".join(
-                    "{}={}".format(key, val[0]) for key, val in query.items()
-                )
-                query = "&" + query if query else query  # add & if not empty
-                start_key = json.dumps(data.pop("last_key"))
-                start = urlencode({"start_key": start_key})
-                data["nextLink"] = request.base_url + "?" + start + query
+                start_key = encode_json(data.pop("last_key"))
+                next_link = iri_to_uri(request.url)
+                if "?" in next_link:
+                    next_link += "&start_key=" + start_key
+                else:
+                    next_link += "?start_key=" + start_key
+                data["nextLink"] =  next_link
                 data["startKey"] = start_key
         return data
 

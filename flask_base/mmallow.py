@@ -7,7 +7,6 @@ import bcrypt
 import dateutil.parser
 import phonenumbers
 import requests
-import simplejson
 import validators
 from dateutil.rrule import rrulestr
 from jsonschema import Draft7Validator
@@ -16,7 +15,7 @@ from more_itertools import unique_everseen
 from netaddr import IPNetwork
 from netaddr.core import AddrFormatError
 import socket
-
+from flask_base.jsonstyle import decode_json
 from flask_base.swagger import mm_plugin
 
 friendly_allowed_chars = [" ", "&", "\'", "-", "_", "(", ")", ".", "/"]
@@ -397,7 +396,7 @@ class ParseQueryString(String):
     def post_deserialize(self, value, attr, obj, **kwargs):
         try:
             r = parse_qs(attr + "=" + value, strict_parsing=True)
-            output = simplejson.loads(r[attr][0])
+            output = decode_json(r[attr][0])
             if not isinstance(output, dict):
                 raise
             return output
