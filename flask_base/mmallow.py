@@ -585,6 +585,11 @@ class List(Fields, fields.List):
         kwargs.setdefault("error_messages", default_error_messages())
         super(List, self).__init__(cls_or_instance, **kwargs)
 
+    def _validate(self, value):
+        if self.min_length == 0 and not value:
+            return None
+        return super(List, self)._validate(value)
+
     def main_deserialize(self, value, attr, data, **kwargs):
         if len(value) < self.min_length:
             raise self.make_error("required")
