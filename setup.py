@@ -10,10 +10,10 @@ setup(
     author_email="wobeng@yblew.com",
     description="flask base app",
     install_requires=[
-        "Flask==2.2.2",
+        "Flask",
         "marshmallow",
         "simplejson",
-        "flasgger==0.9.5",
+        "flasgger",
         "apispec",
         "apispec-webframeworks",
         "PyYAML",
