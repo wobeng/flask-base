@@ -11,6 +11,7 @@ setup(
     description="flask base app",
     install_requires=[
         "Flask",
+        "werkzeug==0.16.1",
         "marshmallow",
         "simplejson",
         "flasgger",
