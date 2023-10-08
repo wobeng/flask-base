@@ -17,6 +17,7 @@ from netaddr.core import AddrFormatError
 import socket
 from flask_base.jsonstyle import decode_json
 from flask_base.swagger import mm_plugin
+import traceback
 
 friendly_allowed_chars = [" ", "&", "\'", "-", "_", "(", ")", ".", "/"]
 
@@ -214,7 +215,9 @@ class Fields:
             try:
                 value = self.post_validate(value)
             except BaseException:
-                raise self.make_error("validator_failed")
+                error = self.make_error("validator_failed")
+                error.messages.append(traceback.format_exc())
+                raise error
         return value
 
     def _deserialize(self, value, attr, obj, **kwargs):
@@ -236,9 +239,9 @@ class Fields:
                 value = self.post_validate(value)
                 if not value:
                     raise
-            except BaseException as e:
+            except BaseException:
                 error = self.make_error("validator_failed")
-                error.messages.append(str(e))
+                error.messages.append(traceback.format_exc())
                 raise error
 
         return value
