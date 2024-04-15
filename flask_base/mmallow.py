@@ -19,7 +19,7 @@ from flask_base.jsonstyle import decode_json
 from flask_base.swagger import mm_plugin
 import traceback
 
-friendly_allowed_chars = [" ", "&", "\'", "-", "_", "(", ")", ".", "/"]
+friendly_allowed_chars = [" ", "&", "'", "-", "_", "(", ")", ".", "/"]
 
 FIELD_NULL = "FieldNotNullException", "This field cannot be empty"
 FIELD_VALIDATOR_FAILED = (
@@ -37,15 +37,25 @@ FIELD_MIN_LENGTH = (
     "FieldMinLengthException",
     "This field is too short or lower than expected",
 )
-FIELD_TAG = ("FieldTagTypeException",
-             "This field is invalid. Only alphanumeric and dash are allowed")
-FIELD_UNIQUE_TAG = ("FieldTagUniqueTypeException",
-                    "This field is invalid. Only alphanumeric, dash, and forward slash are allowed")
-FIELD_SPACE_TAG = ("FieldTagSpaceTypeException",
-                   "This field is invalid. Only alphanumeric, dash and space are allowed")
+FIELD_TAG = (
+    "FieldTagTypeException",
+    "This field is invalid. Only alphanumeric and dash are allowed",
+)
+FIELD_UNIQUE_TAG = (
+    "FieldTagUniqueTypeException",
+    "This field is invalid. Only alphanumeric, dash, and forward slash are allowed",
+)
+FIELD_SPACE_TAG = (
+    "FieldTagSpaceTypeException",
+    "This field is invalid. Only alphanumeric, dash and space are allowed",
+)
 
-FIELD_FRIENDLY_NAME = ("FieldFriendlyNameTypeException",
-                       "This field is invalid. Only alphanumeric, space and special symbols {} are allowed".format(" ".join(friendly_allowed_chars)))
+FIELD_FRIENDLY_NAME = (
+    "FieldFriendlyNameTypeException",
+    "This field is invalid. Only alphanumeric, space and special symbols {} are allowed".format(
+        " ".join(friendly_allowed_chars)
+    ),
+)
 FIELD_RECAPTCHA = (
     "FieldRecaptchaTypeException",
     "Are you human? Refresh page and submit again",
@@ -103,6 +113,7 @@ FIELD_USERNAME = (
     "FieldUsernameTypeException",
     "Username is invalid. Example: username@example.com or +12035556677.",
 )
+
 
 def find_replace_all(str, replace_str, allowed_chars):
     for item in allowed_chars:
@@ -165,8 +176,7 @@ def _date_time(self, value, attr, obj, validator_failed, date=False, iso_format=
             # set dates
             duration = dict()
             duration[attr] = dt
-            other_date = "end_date" if attr.startswith(
-                "start_") else "start_date"
+            other_date = "end_date" if attr.startswith("start_") else "start_date"
             duration[other_date] = dateutil.parser.parse(obj[other_date])
             if date:
                 duration[other_date] = duration[other_date].date()
@@ -201,7 +211,6 @@ def default_error_messages():
 
 class Fields:
     def _serialize(self, value, attr, obj, **kwargs):
-
         for method in [
             "pre_deserialize",
             "main_deserialize",
@@ -231,7 +240,10 @@ class Fields:
                 value = method(value, attr, obj, **kwargs)
 
         # exit if field is allowed to be falsy
-        if getattr(self, "min_length", 1) == 0 or getattr(self, "allow_empty", 1) is True:
+        if (
+            getattr(self, "min_length", 1) == 0
+            or getattr(self, "allow_empty", 1) is True
+        ):
             return value
 
         if self.post_validate:
@@ -258,7 +270,7 @@ class String(Fields, fields.String):
         capitalize=False,
         post_validate=None,
         *args,
-        **kwargs
+        **kwargs,
     ):
         self.min_length = min_length
         self.max_length = max_length
@@ -270,7 +282,8 @@ class String(Fields, fields.String):
         kwargs.setdefault("error_messages", default_error_messages())
         super(String, self).__init__(*args, **kwargs)
         self.error_messages["friendly_name_validator_failed"] = error_msg(
-            FIELD_FRIENDLY_NAME)
+            FIELD_FRIENDLY_NAME
+        )
 
     def main_deserialize(self, value, attr, obj, **kwargs):
         value = str(value).strip()
@@ -282,7 +295,10 @@ class String(Fields, fields.String):
             value = value.lower()
         if self.capitalize:
             value = value.capitalize()
-        if self.friendly_name and not find_replace_all(value, "", self.allow_chars).isalnum():
+        if (
+            self.friendly_name
+            and not find_replace_all(value, "", self.allow_chars).isalnum()
+        ):
             raise self.make_error("friendly_name_validator_failed")
         return value
 
@@ -290,28 +306,32 @@ class String(Fields, fields.String):
 class StringTag(String):
     def __init__(self, *args, **kwargs):
         allow_chars = ["-"]
-        super(StringTag, self).__init__(*args, **kwargs,
-                                        friendly_name=True, allow_chars=allow_chars)
-        self.error_messages["friendly_name_validator_failed"] = error_msg(
-            FIELD_TAG)
+        super(StringTag, self).__init__(
+            *args, **kwargs, friendly_name=True, allow_chars=allow_chars
+        )
+        self.error_messages["friendly_name_validator_failed"] = error_msg(FIELD_TAG)
 
 
 class StringUniqueTag(String):
     def __init__(self, *args, **kwargs):
         allow_chars = ["/", "-"]
-        super(StringUniqueTag, self).__init__(*args, **kwargs, lower=True,
-                                              friendly_name=True, allow_chars=allow_chars)
+        super(StringUniqueTag, self).__init__(
+            *args, **kwargs, lower=True, friendly_name=True, allow_chars=allow_chars
+        )
         self.error_messages["friendly_name_validator_failed"] = error_msg(
-            FIELD_UNIQUE_TAG)
+            FIELD_UNIQUE_TAG
+        )
 
 
 class StringSpaceTag(String):
     def __init__(self, *args, **kwargs):
         allow_chars = [" ", "-"]
-        super(StringSpaceTag, self).__init__(*args, **kwargs,
-                                             friendly_name=True, allow_chars=allow_chars)
+        super(StringSpaceTag, self).__init__(
+            *args, **kwargs, friendly_name=True, allow_chars=allow_chars
+        )
         self.error_messages["friendly_name_validator_failed"] = error_msg(
-            FIELD_SPACE_TAG)
+            FIELD_SPACE_TAG
+        )
 
 
 class Recaptcha(String):
@@ -340,8 +360,7 @@ class Recaptcha(String):
 class Password(String):
     def __init__(self, *args, **kwargs):
         regex = r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$"
-        self.regex = re.compile(regex, 0) if isinstance(
-            regex, (str, bytes)) else regex
+        self.regex = re.compile(regex, 0) if isinstance(regex, (str, bytes)) else regex
         super(Password, self).__init__(*args, **kwargs)
         self.error_messages["validator_failed"] = error_msg(FIELD_PASSWORD)
 
@@ -386,8 +405,7 @@ class Rrule(String):
         self.error_messages["validator_failed"] = error_msg(FIELD_RRULE)
 
     def post_deserialize(self, value, attr, obj, **kwargs):
-        value = value.replace("SECONDLY", "HOURLY").replace(
-            "MINUTELY", "HOURLY")
+        value = value.replace("SECONDLY", "HOURLY").replace("MINUTELY", "HOURLY")
         try:
             rrulestr(value)
             return value
@@ -451,8 +469,7 @@ mm_plugin.map_to_openapi_type(DateTime, "string", "date-time")
 class FutureDateTime(DateTime):
     def __init__(self, *args, **kwargs):
         super(FutureDateTime, self).__init__(*args, **kwargs)
-        self.error_messages["validator_failed"] = error_msg(
-            FIELD_FUTURE_DATETIME)
+        self.error_messages["validator_failed"] = error_msg(FIELD_FUTURE_DATETIME)
 
     def post_deserialize(self, value, attr, obj, **kwargs):
         future = super(FutureDateTime, self)._deserialize(value, attr, obj)
@@ -557,7 +574,6 @@ class Username(String):
         self.error_messages["validator_failed"] = error_msg(FIELD_USERNAME)
 
     def post_deserialize(self, value, attr, obj, **kwargs):
-
         output, output_type = validate_username(value, self.min_length)
 
         if output_type == "email":
@@ -575,16 +591,18 @@ class List(Fields, fields.List):
     def __init__(
         self,
         cls_or_instance,
-        remove_duplicates=False,
         min_length=1,
         max_length=20000,
         post_validate=None,
-        **kwargs
+        duplicate_callable=None,
+        remove_duplicates=False,
+        **kwargs,
     ):
-        self.remove_duplicates = remove_duplicates
         self.min_length = min_length
         self.max_length = max_length
         self.post_validate = post_validate
+        self.duplicate_callable = duplicate_callable
+        self.remove_duplicates = remove_duplicates
         kwargs.setdefault("error_messages", default_error_messages())
         super(List, self).__init__(cls_or_instance, **kwargs)
 
@@ -604,7 +622,7 @@ class List(Fields, fields.List):
         value = list(value)
 
         if self.remove_duplicates:
-            value = list(unique_everseen(value))
+            value = list(unique_everseen(value, key=self.duplicate_callable))
 
         return fields.List._deserialize(self, value, attr, data, **kwargs)
 
@@ -612,6 +630,7 @@ class List(Fields, fields.List):
         if self.min_length == 0 and not value:
             return None
         return value
+
 
 mm_plugin.map_to_openapi_type(List, "array", None)
 
@@ -703,9 +722,8 @@ class Function(fields.Field):
         func_kwargs=None,
         allow_empty=False,
         *args,
-        **kwargs
+        **kwargs,
     ):
-
         self.func_kwargs = func_kwargs or dict()
         self.serialize_func = serialize
         self.deserialize_func = deserialize
@@ -751,8 +769,7 @@ class NestFunction(Nested):
         super(NestFunction, self).__init__(nested, *args, **kwargs)
 
     def _deserialize(self, value, attr, obj, **kwargs):
-        validated_data = super(
-            NestFunction, self)._deserialize(value, attr, obj)
+        validated_data = super(NestFunction, self)._deserialize(value, attr, obj)
         post_validated_data = self.deserialize_func(validated_data)
         if not post_validated_data:
             raise self.make_error("validator_failed")
@@ -761,8 +778,7 @@ class NestFunction(Nested):
 
 class DynamicNested(Nested):
     def __init__(self, nested, key_type, *args, **kwargs):
-        super(DynamicNested, self).__init__(
-            nested, unknown=INCLUDE, *args, **kwargs)
+        super(DynamicNested, self).__init__(nested, unknown=INCLUDE, *args, **kwargs)
         self.key_type = key_type
         self.nested_schema = Nested(nested, unknown=INCLUDE)
 
