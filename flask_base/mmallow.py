@@ -212,7 +212,6 @@ def default_error_messages():
 class Fields:
     def _serialize(self, value, attr, obj, **kwargs):
         for method in [
-            "pre_deserialize",
             "main_deserialize",
             "post_deserialize",
         ]:
@@ -231,7 +230,6 @@ class Fields:
 
     def _deserialize(self, value, attr, obj, **kwargs):
         for method in [
-            "pre_deserialize",
             "main_deserialize",
             "post_deserialize",
         ]:
@@ -300,7 +298,7 @@ class String(Fields, fields.String):
             and not find_replace_all(value, "", self.allow_chars).isalnum()
         ):
             raise self.make_error("friendly_name_validator_failed")
-        return value
+        return fields.String._deserialize(self, value, attr, obj, **kwargs)
 
 
 class StringTag(String):
@@ -659,20 +657,24 @@ class Boolean(fields.Boolean):
 mm_plugin.map_to_openapi_type(Boolean, "boolean", None)
 
 
-class Integer(fields.Integer):
-    def __init__(self, min_length=None, max_length=None, *args, **kwargs):
+class Integer(Fields, fields.Integer):
+    def __init__(
+        self, min_length=None, max_length=None, post_validate=None, *args, **kwargs
+    ):
         self.min_length = min_length
         self.max_length = max_length
+        self.post_validate = post_validate
         kwargs.setdefault("error_messages", default_error_messages())
         super(Integer, self).__init__(*args, **kwargs)
 
     def main_deserialize(self, value, attr, obj, **kwargs):
-        value = str(value)
-        if self.min_length and value < self.min_length:
-            raise self.make_error("min_length")
-        if self.max_length and value > self.max_length:
-            raise self.make_error("max_length")
-        return value
+        if self.min_length is not None:
+            if self.min_length and value < self.min_length:
+                raise self.make_error("min_length")
+        if self.max_length is not None:
+            if self.max_length and value > self.max_length:
+                raise self.make_error("max_length")
+        return fields.Integer._deserialize(self, value, attr, obj, **kwargs)
 
 
 mm_plugin.map_to_openapi_type(Integer, "integer", "int32")
@@ -697,8 +699,7 @@ class Nested(Fields, fields.Nested):
     def main_deserialize(self, value, attr, obj, **kwargs):
         if self.allow_empty and not value:
             return value
-        value = fields.Nested._deserialize(self, value, attr, obj, **kwargs)
-        return value
+        return fields.Nested._deserialize(self, value, attr, obj, **kwargs)
 
 
 class OneOf(validate.OneOf):
