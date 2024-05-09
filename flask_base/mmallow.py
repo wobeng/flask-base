@@ -18,6 +18,7 @@ import socket
 from flask_base.jsonstyle import decode_json
 from flask_base.swagger import mm_plugin
 import traceback
+from datetime import datetime, timezone
 
 friendly_allowed_chars = [" ", "&", "'", "-", "_", "(", ")", ".", "/"]
 
@@ -464,22 +465,6 @@ class DateTime(String):
 mm_plugin.map_to_openapi_type(DateTime, "string", "date-time")
 
 
-class FutureDateTime(DateTime):
-    def __init__(self, *args, **kwargs):
-        super(FutureDateTime, self).__init__(*args, **kwargs)
-        self.error_messages["validator_failed"] = error_msg(FIELD_FUTURE_DATETIME)
-
-    def post_deserialize(self, value, attr, obj, **kwargs):
-        future = super(FutureDateTime, self)._deserialize(value, attr, obj)
-        present = datetime_utc().replace(microsecond=0)
-        if present > future:
-            raise self.make_error("validator_failed")
-        return future
-
-
-mm_plugin.map_to_openapi_type(FutureDateTime, "string", "date-time")
-
-
 class Domain(String):
     def __init__(self, *args, **kwargs):
         super(Domain, self).__init__(lower=True, *args, **kwargs)
@@ -678,6 +663,21 @@ class Integer(Fields, fields.Integer):
 
 
 mm_plugin.map_to_openapi_type(Integer, "integer", "int32")
+
+
+class FutureTimestamp(Integer):
+    def __init__(self, *args, **kwargs):
+        super(FutureTimestamp, self).__init__(*args, **kwargs)
+        self.error_messages["validator_failed"] = error_msg(FIELD_FUTURE_DATETIME)
+
+    def post_deserialize(self, value, attr, obj, **kwargs):
+        present = int(datetime.now(timezone.utc).timestamp())
+        if present >= value:
+            raise self.make_error("validator_failed")
+        return value
+
+
+mm_plugin.map_to_openapi_type(FutureTimestamp, "integer", "int32")
 
 
 class Float(fields.Float):
