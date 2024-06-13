@@ -1,6 +1,5 @@
 import os
 import re
-from py_tools.date import datetime_utc
 from urllib.parse import parse_qs
 
 import bcrypt
