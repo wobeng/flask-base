@@ -18,6 +18,8 @@ from flask_base.jsonstyle import decode_json
 from flask_base.swagger import mm_plugin
 import traceback
 from datetime import datetime, timezone
+import pytz
+
 
 friendly_allowed_chars = [" ", "&", "'", "-", "_", "(", ")", ".", "/"]
 
@@ -162,37 +164,68 @@ def validate_username(value, min_length=None):
     return None, None
 
 
-def _date_time(self, value, attr, obj, validator_failed, date=False, iso_format=False):
+def date_time(
+    self,
+    value,
+    attr,
+    obj,
+    validator_failed,
+    date=False,
+    iso_format=False,
+    timezone_func=None,
+):
     if not self.min_length and value == "":
         return value
+
     try:
-        # convert to datetime
-        dt = dateutil.parser.parse(value).replace(microsecond=0)
+        # get timezone
+        timezone_str = timezone_func() if timezone_func else "UTC"
+        dt = parse_and_localize(value, timezone_str)
         if date:
             dt = dt.date()
-        # compare start and end date if its duration
-        attr = attr or ""
-        if attr and attr.startswith("start_") or attr.startswith("end_"):
-            # set dates
-            duration = dict()
-            duration[attr] = dt
-            other_date = "end_date" if attr.startswith("start_") else "start_date"
-            duration[other_date] = dateutil.parser.parse(obj[other_date])
-            if date:
-                duration[other_date] = duration[other_date].date()
-            # get dates
-            start_date = duration.get("start_date", duration.get("end_date"))
-            end_date = duration.get("end_date", duration.get("start_date"))
-            # compare dates
+
+        if attr and (attr.startswith("start_") or attr.startswith("end_")):
+            start_date, end_date = validate_duration(
+                dt,
+                attr,
+                obj,
+                date,
+                timezone_str,
+            )
             if start_date > end_date:
                 self.error_messages["validator_failed"] = validator_failed
                 raise BaseException
-        # return string if preferred
-        if iso_format:
-            return dt.isoformat()
-        return dt
+
+        return dt.isoformat() if iso_format else dt
+
     except BaseException:
         raise self.make_error("validator_failed")
+
+
+def parse_and_localize(value, timezone_str):
+    dt = dateutil.parser.parse(value).replace(microsecond=0)
+
+    if dt.tzinfo is None:
+        timezone = pytz.timezone(timezone_str)
+        dt = timezone.localize(dt)
+
+    return dt.astimezone(pytz.utc)
+
+
+def validate_duration(dt, attr, obj, date, timezone_str):
+    duration = {attr: dt}
+    other_date_key = "end_date" if attr.startswith("start_") else "start_date"
+    other_dt = parse_and_localize(obj[other_date_key], timezone_str)
+
+    if date:
+        other_dt = other_dt.date()
+
+    duration[other_date_key] = other_dt
+
+    start_date = duration.get("start_date", duration.get("end_date"))
+    end_date = duration.get("end_date", duration.get("start_date"))
+
+    return start_date, end_date
 
 
 def default_error_messages():
@@ -430,7 +463,7 @@ class Date(String):
 
     def post_deserialize(self, value, attr, obj, **kwargs):
         self.error_messages["validator_failed"] = error_msg(FIELD_DATE)
-        return _date_time(
+        return date_time(
             self,
             value,
             attr,
@@ -445,19 +478,21 @@ mm_plugin.map_to_openapi_type(Date, "string", "date")
 
 
 class DateTime(String):
-    def __init__(self, iso_format=False, *args, **kwargs):
+    def __init__(self, iso_format=False, timezone_func=None, *args, **kwargs):
         super(DateTime, self).__init__(*args, **kwargs)
         self.iso_format = iso_format
+        self.timezone_func = timezone_func
 
     def post_deserialize(self, value, attr, obj, **kwargs):
         self.error_messages["validator_failed"] = error_msg(FIELD_DATETIME)
-        return _date_time(
+        return date_time(
             self,
             value,
             attr,
             obj,
             error_msg(FIELD_START_END_DATETIME),
             iso_format=self.iso_format,
+            timezone_func=self.timezone_func,
         )
 
 
