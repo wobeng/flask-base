@@ -214,7 +214,16 @@ def parse_and_localize(value, timezone_str):
 
 def validate_duration(dt, attr, obj, date, timezone_str):
     duration = {attr: dt}
-    other_date_key = "end_date" if attr.startswith("start_") else "start_date"
+
+    if attr.startswith("start_"):
+        start_key = attr
+        end_key = "end_" + attr[6:]
+        other_date_key = end_key
+    else:
+        end_key = attr
+        start_key = "start_" + attr[4:]
+        other_date_key = start_key
+
     other_dt = parse_and_localize(obj[other_date_key], timezone_str)
 
     if date:
@@ -222,10 +231,10 @@ def validate_duration(dt, attr, obj, date, timezone_str):
 
     duration[other_date_key] = other_dt
 
-    start_date = duration.get("start_date", duration.get("end_date"))
-    end_date = duration.get("end_date", duration.get("start_date"))
+    start_dt = duration.get(start_key, duration.get(end_key))
+    end_dt = duration.get(end_key, duration.get(start_key))
 
-    return start_date, end_date
+    return start_dt, end_dt
 
 
 def default_error_messages():
