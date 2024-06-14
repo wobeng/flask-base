@@ -479,6 +479,7 @@ mm_plugin.map_to_openapi_type(Date, "string", "date")
 
 class DateTime(String):
     def __init__(self, iso_format=False, timezone_func=None, *args, **kwargs):
+        kwargs.setdefault("metadata", {"example": "2023-06-14T14:30:00"})
         super(DateTime, self).__init__(*args, **kwargs)
         self.iso_format = iso_format
         self.timezone_func = timezone_func
