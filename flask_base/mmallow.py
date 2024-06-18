@@ -20,7 +20,6 @@ import traceback
 from datetime import datetime, timezone
 import pytz
 
-
 friendly_allowed_chars = [" ", "&", "'", "-", "_", "(", ")", ".", "/"]
 
 FIELD_NULL = "FieldNotNullException", "This field cannot be empty"
@@ -199,6 +198,7 @@ def date_time(
         return dt.isoformat() if iso_format else dt
 
     except BaseException:
+        traceback.print_exc()
         raise self.make_error("validator_failed")
 
 
