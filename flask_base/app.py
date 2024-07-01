@@ -18,9 +18,7 @@ class CloudfrontProxy(object):
 
     def __call__(self, environ, start_response):
         if "HTTP_CLOUDFRONT_FORWARDED_PROTO" in environ:
-            environ["wsgi.url_scheme"] = environ[
-                "HTTP_CLOUDFRONT_FORWARDED_PROTO"
-            ]
+            environ["wsgi.url_scheme"] = environ["HTTP_CLOUDFRONT_FORWARDED_PROTO"]
         return self.app(environ, start_response)
 
 
@@ -34,7 +32,7 @@ def init_api(
     index_docs=True,
 ):
     # create an application instance.
-    app = Flask(name, instance_relative_config=True)
+    app = Flask(name, instance_relative_config=True, subdomain_matching=True)
 
     # init reserve proxy
     app.wsgi_app = ProxyFix(app.wsgi_app)
