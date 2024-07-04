@@ -49,7 +49,7 @@ def init_api(
     translate = {"True": True, "False": False, "None": None}
     for k, v in flask_vars.items():
         if k.startswith("FLASK_"):
-            app.config[k.split("_")[-1]] = translate.get(v, v)
+            app.config[k.replace("FLASK_", "")] = translate.get(v, v)
 
     # handle error
     @app.errorhandler(Error)
