@@ -117,7 +117,7 @@ def import_submodules(package, recursive=True):
         try:
             results[full_name] = importlib.import_module(full_name)
         except BaseException:
-            logger.critical(full_name)
+            logger.critical("Failed to import: %s", full_name)
             logger.critical(traceback.format_exc())
         if recursive and is_pkg:
             results.update(import_submodules(full_name))
