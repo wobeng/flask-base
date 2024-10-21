@@ -6,7 +6,10 @@ from collections import OrderedDict
 
 from apispec.ext.marshmallow import openapi
 from flask import request
-from flask_base import get_logger
+from py_tools.pylog import get_logger
+
+
+logger = get_logger("flask-base")
 
 http_path = ["path", "body", "query", "header", "view_arg"]
 http_methods = [
@@ -107,7 +110,6 @@ def import_submodules(package, recursive=True):
     :type package: str | module
     :rtype: dict[str, types.ModuleType]
     """
-    logger = get_logger(package)
 
     if isinstance(package, str):
         package = importlib.import_module(package)
