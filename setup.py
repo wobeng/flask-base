@@ -25,7 +25,7 @@ setup(
         "requests",
         "validators",
         "more_itertools",
-        "jsonschema",
+        "jsonschema==4.17",
         "pytz",
         "netaddr",
         "py-tools @ git+https://git@github.com/wobeng/py-tools.git@master#egg=py-tools-1.0.0",
