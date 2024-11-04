@@ -35,7 +35,7 @@ def init_api(
     app = Flask(name, instance_relative_config=True, subdomain_matching=True)
 
     # init reserve proxy
-    app.wsgi_app = ProxyFix(app.wsgi_app)
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_host=1)
     app.wsgi_app = CloudfrontProxy(app.wsgi_app)
 
     # init cors
