@@ -174,7 +174,7 @@ def date_time(
         return value
 
     try:
-        dt = parse_datetime(value)
+        dt = parse_datetime(value, date)
 
         if date:
             dt = dt.date()
@@ -204,10 +204,10 @@ def date_time(
         raise self.make_error("validator_failed")
 
 
-def parse_datetime(value):
+def parse_datetime(value, date):
     dt = dateutil.parser.parse(value).replace(microsecond=0)
 
-    if dt.tzinfo is None:
+    if not date and dt.tzinfo is None:
         raise BaseException
 
     return dt
@@ -225,7 +225,7 @@ def validate_duration(dt, attr, obj, date):
         start_key = "start_" + attr[4:]
         other_date_key = start_key
 
-    other_dt = parse_datetime(obj[other_date_key])
+    other_dt = parse_datetime(obj[other_date_key], date)
 
     if date:
         other_dt = other_dt.date()
