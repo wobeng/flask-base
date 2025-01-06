@@ -18,7 +18,6 @@ from flask_base.jsonstyle import decode_json
 from flask_base.swagger import mm_plugin
 import traceback
 from datetime import datetime, timezone
-import pytz
 
 friendly_allowed_chars = [" ", "&", "'", "-", "_", "(", ")", ".", "/"]
 
@@ -81,10 +80,10 @@ FIELD_JSONSCHEMA = (
     "FieldJsonSchemaTypeException",
     "Schema is invalid. Example: http://json-schema.org/examples.html",
 )
-FIELD_DATE = "FieldDateTypeException", "Date is invalid. Example: mm/dd/yyyy."
+FIELD_DATE = "FieldDateTypeException", "Date is invalid. Example: yyyy-MM-dd."
 FIELD_DATETIME = (
     "FieldDateTimeTypeException",
-    "Datetime is invalid. Example: mm/dd/yyyy-00:00:00.",
+    "Datetime is invalid. Example: yyyy-MM-ddTHH:mm:ss.",
 )
 FIELD_FUTURE_DATETIME = (
     "FieldFutureDateTimeTypeException",
@@ -92,11 +91,11 @@ FIELD_FUTURE_DATETIME = (
 )
 FIELD_START_END_DATE = (
     "FieldStartEndDateException",
-    "Start date is invalid. Example: mm/dd/yyyy.",
+    "Start date must be earlier than end date and on the same day. Example: yyyy-MM-dd.",
 )
 FIELD_START_END_DATETIME = (
-    "FieldStartEndDateException",
-    "Start date is invalid. Example: mm/dd/yyyy-00:00:00.",
+    "FieldStartEndDateTimeException",
+    "Start datetime must be earlier than end datetime and on the same day. Example: yyyy-MM-ddTHH:mm:ss.",
 )
 FIELD_DOMAIN = (
     "FieldDomainTypeException",
@@ -168,18 +167,15 @@ def date_time(
     value,
     attr,
     obj,
-    validator_failed,
     date=False,
     iso_format=False,
-    timezone_func=None,
 ):
     if not self.min_length and value == "":
         return value
 
     try:
-        # get timezone
-        timezone_str = timezone_func() if timezone_func else "UTC"
-        dt = parse_and_localize(value, timezone_str)
+        dt = parse_datetime(value)
+
         if date:
             dt = dt.date()
 
@@ -189,10 +185,16 @@ def date_time(
                 attr,
                 obj,
                 date,
-                timezone_str,
             )
             if start_date > end_date:
-                self.error_messages["validator_failed"] = validator_failed
+                if date:
+                    self.error_messages["validator_failed"] = error_msg(
+                        FIELD_START_END_DATE
+                    )
+                else:
+                    self.error_messages["validator_failed"] = error_msg(
+                        FIELD_START_END_DATETIME
+                    )
                 raise BaseException
 
         return dt.isoformat() if iso_format else dt
@@ -202,17 +204,16 @@ def date_time(
         raise self.make_error("validator_failed")
 
 
-def parse_and_localize(value, timezone_str):
+def parse_datetime(value):
     dt = dateutil.parser.parse(value).replace(microsecond=0)
 
     if dt.tzinfo is None:
-        timezone = pytz.timezone(timezone_str)
-        dt = timezone.localize(dt)
+        raise BaseException
 
-    return dt.astimezone(pytz.utc)
+    return dt
 
 
-def validate_duration(dt, attr, obj, date, timezone_str):
+def validate_duration(dt, attr, obj, date):
     duration = {attr: dt}
 
     if attr.startswith("start_"):
@@ -224,7 +225,7 @@ def validate_duration(dt, attr, obj, date, timezone_str):
         start_key = "start_" + attr[4:]
         other_date_key = start_key
 
-    other_dt = parse_and_localize(obj[other_date_key], timezone_str)
+    other_dt = parse_datetime(obj[other_date_key])
 
     if date:
         other_dt = other_dt.date()
@@ -477,7 +478,6 @@ class Date(String):
             value,
             attr,
             obj,
-            error_msg(FIELD_START_END_DATE),
             date=True,
             iso_format=self.iso_format,
         )
@@ -499,7 +499,6 @@ class DateTime(String):
             value,
             attr,
             obj,
-            error_msg(FIELD_START_END_DATETIME),
             iso_format=self.iso_format,
             timezone_func=self.timezone_func,
         )
