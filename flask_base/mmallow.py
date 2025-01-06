@@ -487,10 +487,9 @@ mm_plugin.map_to_openapi_type(Date, "string", "date")
 
 
 class DateTime(String):
-    def __init__(self, iso_format=False, timezone_func=None, *args, **kwargs):
+    def __init__(self, iso_format=False, *args, **kwargs):
         super(DateTime, self).__init__(*args, **kwargs)
         self.iso_format = iso_format
-        self.timezone_func = timezone_func
 
     def post_deserialize(self, value, attr, obj, **kwargs):
         self.error_messages["validator_failed"] = error_msg(FIELD_DATETIME)
@@ -500,7 +499,6 @@ class DateTime(String):
             attr,
             obj,
             iso_format=self.iso_format,
-            timezone_func=self.timezone_func,
         )
 
 
