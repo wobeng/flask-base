@@ -18,8 +18,8 @@ from flask_base.jsonstyle import decode_json
 from flask_base.swagger import mm_plugin
 import traceback
 from datetime import datetime, timezone
+import emoji
 
-friendly_allowed_chars = [" ", "&", "'", "-", "_", "(", ")", ".", "/"]
 
 FIELD_NULL = "FieldNotNullException", "This field cannot be empty"
 FIELD_VALIDATOR_FAILED = (
@@ -119,6 +119,22 @@ def find_replace_all(str, replace_str, allowed_chars):
     for item in allowed_chars:
         str = str.replace(item, replace_str)
     return str
+
+
+def is_valid_friendly_input(s: str, allowed_chars: list[str]) -> bool:
+    allow_emoji = False
+    if allowed_chars is None or len(allowed_chars) == 0:
+        allow_emoji = True
+        allowed_chars = allowed_chars or [" ", "&", "'", "-", "_", "(", ")", ".", "/"]
+
+    for char in s:
+        if char.isalnum() or char in allowed_chars:
+            continue
+        elif allow_emoji and emoji.is_emoji(char):
+            continue
+        else:
+            return False
+    return True
 
 
 def error_msg(field):
@@ -319,7 +335,7 @@ class String(Fields, fields.String):
         self.lower = lower
         self.capitalize = capitalize
         self.post_validate = post_validate
-        self.allow_chars = allow_chars or friendly_allowed_chars
+        self.allow_chars = allow_chars
         kwargs.setdefault("error_messages", default_error_messages())
         super(String, self).__init__(*args, **kwargs)
         self.error_messages["friendly_name_validator_failed"] = error_msg(
@@ -336,11 +352,9 @@ class String(Fields, fields.String):
             value = value.lower()
         if self.capitalize:
             value = value.capitalize()
-        if (
-            self.friendly_name
-            and not find_replace_all(value, "", self.allow_chars).isalnum()
-        ):
-            raise self.make_error("friendly_name_validator_failed")
+        if self.friendly_name:
+            if not is_valid_friendly_input(value, self.allow_chars):
+                raise self.make_error("friendly_name_validator_failed")
         return fields.String._deserialize(self, value, attr, obj, **kwargs)
 
 
