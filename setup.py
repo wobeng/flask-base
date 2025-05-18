@@ -20,6 +20,7 @@ setup(
         "PyYAML",
         "flask-cors",
         "bcrypt",
+        "emoji",
         "python-dateutil",
         "phonenumbers",
         "requests",
