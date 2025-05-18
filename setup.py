@@ -21,6 +21,7 @@ setup(
         "flask-cors",
         "bcrypt",
         "emoji",
+        "regex",
         "python-dateutil",
         "phonenumbers",
         "requests",
