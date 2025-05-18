@@ -19,6 +19,7 @@ from flask_base.swagger import mm_plugin
 import traceback
 from datetime import datetime, timezone
 import emoji
+import regex
 
 friendly_allowed_chars = [" ", "&", "'", "-", "_", "(", ")", ".", "/"]
 
@@ -122,16 +123,17 @@ def find_replace_all(str, replace_str, allowed_chars):
     return str
 
 
-def is_valid_friendly_input(s: str, allowed_chars: list[str]) -> bool:
+def is_valid_friendly_input(s, allowed_chars=None) -> bool:
     allow_emoji = False
     if allowed_chars is None or len(allowed_chars) == 0:
         allow_emoji = True
         allowed_chars = allowed_chars or friendly_allowed_chars
 
-    for char in s:
-        if char.isalnum() or char in allowed_chars:
+    # Use grapheme clusters
+    for grapheme in regex.findall(r"\X", s):
+        if grapheme.isalnum() or grapheme in allowed_chars:
             continue
-        elif allow_emoji and emoji.is_emoji(char):
+        elif allow_emoji and emoji.is_emoji(grapheme):
             continue
         else:
             return False
