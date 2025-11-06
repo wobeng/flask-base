@@ -39,16 +39,16 @@ FIELD_MIN_LENGTH = (
     "FieldMinLengthException",
     "This field is too short or lower than expected",
 )
-FIELD_TAG = (
-    "FieldTagTypeException",
+FIELD_SLUG = (
+    "FieldSlugTypeException",
     "This field is invalid. Only alphanumeric and dash are allowed",
 )
-FIELD_UNIQUE_TAG = (
-    "FieldTagUniqueTypeException",
+FIELD_PATH_SLUG = (
+    "FieldPathSlugTypeException",
     "This field is invalid. Only alphanumeric, dash, and forward slash are allowed",
 )
-FIELD_SPACE_TAG = (
-    "FieldTagSpaceTypeException",
+FIELD_TITLE = (
+    "FieldTitleTypeException",
     "This field is invalid. Only alphanumeric, dash and space are allowed",
 )
 
@@ -367,7 +367,7 @@ class StringSlug(String):
         super(StringSlug, self).__init__(
             *args, **kwargs, friendly_name=True, allow_chars=allow_chars
         )
-        self.error_messages["friendly_name_validator_failed"] = error_msg(FIELD_TAG)
+        self.error_messages["friendly_name_validator_failed"] = error_msg(FIELD_SLUG)
 
 
 class StringPathSlug(String):
@@ -377,7 +377,7 @@ class StringPathSlug(String):
             *args, **kwargs, lower=True, friendly_name=True, allow_chars=allow_chars
         )
         self.error_messages["friendly_name_validator_failed"] = error_msg(
-            FIELD_UNIQUE_TAG
+            FIELD_PATH_SLUG
         )
 
 
@@ -388,7 +388,7 @@ class StringTitle(String):
             *args, **kwargs, friendly_name=True, allow_chars=allow_chars
         )
         self.error_messages["friendly_name_validator_failed"] = error_msg(
-            FIELD_SPACE_TAG
+            FIELD_TITLE
         )
 
 
