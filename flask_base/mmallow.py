@@ -361,19 +361,19 @@ class String(Fields, fields.String):
         return fields.String._deserialize(self, value, attr, obj, **kwargs)
 
 
-class StringTag(String):
+class StringSlug(String):
     def __init__(self, *args, **kwargs):
         allow_chars = ["-"]
-        super(StringTag, self).__init__(
+        super(StringSlug, self).__init__(
             *args, **kwargs, friendly_name=True, allow_chars=allow_chars
         )
         self.error_messages["friendly_name_validator_failed"] = error_msg(FIELD_TAG)
 
 
-class StringUniqueTag(String):
+class StringPathSlug(String):
     def __init__(self, *args, **kwargs):
         allow_chars = ["/", "-"]
-        super(StringUniqueTag, self).__init__(
+        super(StringPathSlug, self).__init__(
             *args, **kwargs, lower=True, friendly_name=True, allow_chars=allow_chars
         )
         self.error_messages["friendly_name_validator_failed"] = error_msg(
@@ -381,10 +381,10 @@ class StringUniqueTag(String):
         )
 
 
-class StringSpaceTag(String):
+class StringTitle(String):
     def __init__(self, *args, **kwargs):
         allow_chars = [" ", "-"]
-        super(StringSpaceTag, self).__init__(
+        super(StringTitle, self).__init__(
             *args, **kwargs, friendly_name=True, allow_chars=allow_chars
         )
         self.error_messages["friendly_name_validator_failed"] = error_msg(
