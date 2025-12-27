@@ -9,7 +9,7 @@ import requests
 import validators
 from dateutil.rrule import rrulestr
 from jsonschema import Draft7Validator
-from marshmallow import fields, validate, INCLUDE
+from marshmallow import fields, validate, INCLUDE, ValidationError
 from more_itertools import unique_everseen
 from netaddr import IPNetwork
 from netaddr.core import AddrFormatError
@@ -115,6 +115,24 @@ FIELD_USERNAME = (
     "FieldUsernameTypeException",
     "Username is invalid. Example: username@example.com or +12035556677.",
 )
+
+
+def default_error_messages():
+    return dict(
+        {
+            "null": error_msg(FIELD_NULL),
+            "validator_failed": error_msg(FIELD_VALIDATOR_FAILED),
+            "required": error_msg(FIELD_REQUIRED),
+            "field_type": error_msg(FIELD_FIELD_TYPE),
+            "invalid": error_msg(FIELD_INVALID),
+            "max_length": error_msg(FIELD_MAX_LENGTH),
+            "min_length": error_msg(FIELD_MIN_LENGTH),
+        }
+    )
+
+
+# Override marshmallow default error messages
+fields.Field.default_error_messages = default_error_messages()
 
 
 def find_replace_all(str, replace_str, allowed_chars):
@@ -257,22 +275,11 @@ def validate_duration(dt, attr, obj, date):
     return start_dt, end_dt
 
 
-def default_error_messages():
-    return dict(
-        {
-            "null": error_msg(FIELD_NULL),
-            "validator_failed": error_msg(FIELD_VALIDATOR_FAILED),
-            "required": error_msg(FIELD_REQUIRED),
-            "field_type": error_msg(FIELD_FIELD_TYPE),
-            "invalid": error_msg(FIELD_INVALID),
-            "max_length": error_msg(FIELD_MAX_LENGTH),
-            "min_length": error_msg(FIELD_MIN_LENGTH),
-        }
-    )
-
-
 class Fields:
+    """Base field with custom serialization and deserialization methods."""
+
     def _serialize(self, value, attr, obj, **kwargs):
+        """dumping data from object to primitive types."""
         for method in [
             "main_deserialize",
             "post_deserialize",
@@ -284,6 +291,8 @@ class Fields:
         if self.post_validate:
             try:
                 value = self.post_validate(value)
+            except ValidationError as error:
+                raise error
             except BaseException:
                 error = self.make_error("validator_failed")
                 error.messages.append(traceback.format_exc())
@@ -291,6 +300,7 @@ class Fields:
         return value
 
     def _deserialize(self, value, attr, obj, **kwargs):
+        """loading data from primitive types to object."""
         for method in [
             "main_deserialize",
             "post_deserialize",
@@ -302,7 +312,7 @@ class Fields:
         # exit if field is allowed to be falsy
         if (
             getattr(self, "min_length", 1) == 0
-            or getattr(self, "allow_empty", 1) is True
+            or getattr(self, "allow_empty", False) is True
         ):
             return value
 
@@ -311,6 +321,8 @@ class Fields:
                 value = self.post_validate(value)
                 if not value:
                     raise
+            except ValidationError as error:
+                raise error
             except BaseException:
                 error = self.make_error("validator_failed")
                 error.messages.append(traceback.format_exc())
@@ -320,6 +332,10 @@ class Fields:
 
 
 class String(Fields, fields.String):
+    default_error_messages = {
+        "friendly_name_validator_failed": error_msg(FIELD_FRIENDLY_NAME)
+    }
+
     def __init__(
         self,
         min_length=1,
@@ -339,11 +355,7 @@ class String(Fields, fields.String):
         self.capitalize = capitalize
         self.post_validate = post_validate
         self.allow_chars = allow_chars
-        kwargs.setdefault("error_messages", default_error_messages())
         super(String, self).__init__(*args, **kwargs)
-        self.error_messages["friendly_name_validator_failed"] = error_msg(
-            FIELD_FRIENDLY_NAME
-        )
 
     def main_deserialize(self, value, attr, obj, **kwargs):
         value = str(value).strip()
@@ -362,42 +374,43 @@ class String(Fields, fields.String):
 
 
 class StringSlug(String):
+    default_error_messages = {"friendly_name_validator_failed": error_msg(FIELD_SLUG)}
+
     def __init__(self, *args, **kwargs):
         allow_chars = ["-"]
         super(StringSlug, self).__init__(
             *args, **kwargs, friendly_name=True, allow_chars=allow_chars
         )
-        self.error_messages["friendly_name_validator_failed"] = error_msg(FIELD_SLUG)
 
 
 class StringPathSlug(String):
+    default_error_messages = {
+        "friendly_name_validator_failed": error_msg(FIELD_PATH_SLUG)
+    }
+
     def __init__(self, *args, **kwargs):
         allow_chars = ["/", "-"]
         super(StringPathSlug, self).__init__(
             *args, **kwargs, lower=True, friendly_name=True, allow_chars=allow_chars
         )
-        self.error_messages["friendly_name_validator_failed"] = error_msg(
-            FIELD_PATH_SLUG
-        )
 
 
 class StringTitle(String):
+    default_error_messages = {"friendly_name_validator_failed": error_msg(FIELD_TITLE)}
+
     def __init__(self, *args, **kwargs):
         allow_chars = [" ", "-"]
         super(StringTitle, self).__init__(
             *args, **kwargs, friendly_name=True, allow_chars=allow_chars
         )
-        self.error_messages["friendly_name_validator_failed"] = error_msg(
-            FIELD_TITLE
-        )
 
 
 class Recaptcha(String):
+    default_error_messages = {"validator_failed": error_msg(FIELD_RECAPTCHA)}
+
     def __init__(self, action, *args, **kwargs):
         self.action = action
-        kwargs.setdefault("error_messages", default_error_messages())
         super(Recaptcha, self).__init__(*args, **kwargs)
-        self.error_messages["validator_failed"] = error_msg(FIELD_RECAPTCHA)
 
     def post_deserialize(self, value, attr, obj, **kwargs):
         if value == os.environ["RECAPTCHA_SECRET_TEST"]:
@@ -416,11 +429,12 @@ class Recaptcha(String):
 
 
 class Password(String):
+    default_error_messages = {"validator_failed": error_msg(FIELD_PASSWORD)}
+
     def __init__(self, *args, **kwargs):
         regex = r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$"
         self.regex = re.compile(regex, 0) if isinstance(regex, (str, bytes)) else regex
         super(Password, self).__init__(*args, **kwargs)
-        self.error_messages["validator_failed"] = error_msg(FIELD_PASSWORD)
 
     def post_deserialize(self, value, attr, obj, **kwargs):
         if self.regex.match(value) is None:
@@ -432,9 +446,10 @@ mm_plugin.map_to_openapi_type(Password, "string", "password")
 
 
 class Cidr(String):
+    default_error_messages = {"validator_failed": error_msg(FIELD_CIDR)}
+
     def __init__(self, *args, **kwargs):
         super(Cidr, self).__init__(lower=True, *args, **kwargs)
-        self.error_messages["validator_failed"] = error_msg(FIELD_CIDR)
 
     def post_deserialize(self, value, attr, obj, **kwargs):
         try:
@@ -445,9 +460,10 @@ class Cidr(String):
 
 
 class Phone(String):
+    default_error_messages = {"validator_failed": error_msg(FIELD_PHONE)}
+
     def __init__(self, *args, **kwargs):
         super(Phone, self).__init__(lower=True, *args, **kwargs)
-        self.error_messages["validator_failed"] = error_msg(FIELD_PHONE)
 
     def post_deserialize(self, value, attr, obj, **kwargs):
         output = validate_phone(value, self.min_length)
@@ -457,10 +473,11 @@ class Phone(String):
 
 
 class Rrule(String):
+    default_error_messages = {"validator_failed": error_msg(FIELD_RRULE)}
+
     def __init__(self, *args, **kwargs):
         kwargs.setdefault("metadata", {"example": "FREQ=DAILY"})
         super(Rrule, self).__init__(*args, **kwargs)
-        self.error_messages["validator_failed"] = error_msg(FIELD_RRULE)
 
     def post_deserialize(self, value, attr, obj, **kwargs):
         value = value.replace("SECONDLY", "HOURLY").replace("MINUTELY", "HOURLY")
@@ -484,12 +501,13 @@ class ParseQueryString(String):
 
 
 class Date(String):
+    default_error_messages = {"validator_failed": error_msg(FIELD_DATE)}
+
     def __init__(self, iso_format=True, *args, **kwargs):
         super(Date, self).__init__(*args, **kwargs)
         self.iso_format = iso_format
 
     def post_deserialize(self, value, attr, obj, **kwargs):
-        self.error_messages["validator_failed"] = error_msg(FIELD_DATE)
         return date_time(
             self,
             value,
@@ -504,12 +522,13 @@ mm_plugin.map_to_openapi_type(Date, "string", "date")
 
 
 class DateTime(String):
+    default_error_messages = {"validator_failed": error_msg(FIELD_DATETIME)}
+
     def __init__(self, iso_format=False, *args, **kwargs):
         super(DateTime, self).__init__(*args, **kwargs)
         self.iso_format = iso_format
 
     def post_deserialize(self, value, attr, obj, **kwargs):
-        self.error_messages["validator_failed"] = error_msg(FIELD_DATETIME)
         return date_time(
             self,
             value,
@@ -523,9 +542,10 @@ mm_plugin.map_to_openapi_type(DateTime, "string", "date-time")
 
 
 class Domain(String):
+    default_error_messages = {"validator_failed": error_msg(FIELD_DOMAIN)}
+
     def __init__(self, *args, **kwargs):
         super(Domain, self).__init__(lower=True, *args, **kwargs)
-        self.error_messages["validator_failed"] = error_msg(FIELD_DOMAIN)
 
     def post_deserialize(self, value, attr, obj, **kwargs):
         if not self.min_length and value == "":
@@ -543,9 +563,10 @@ mm_plugin.map_to_openapi_type(Domain, "string", "domain")
 
 
 class Email(String):
+    default_error_messages = {"validator_failed": error_msg(FIELD_EMAIL)}
+
     def __init__(self, *args, **kwargs):
         super(Email, self).__init__(lower=True, *args, **kwargs)
-        self.error_messages["validator_failed"] = error_msg(FIELD_EMAIL)
 
     def post_deserialize(self, value, attr, obj, **kwargs):
         output = validate_email(value, min_length=None)
@@ -558,9 +579,10 @@ mm_plugin.map_to_openapi_type(Email, "string", "email")
 
 
 class Url(String):
+    default_error_messages = {"validator_failed": error_msg(FIELD_URL)}
+
     def __init__(self, *args, **kwargs):
         super(Url, self).__init__(lower=True, *args, **kwargs)
-        self.error_messages["validator_failed"] = error_msg(FIELD_URL)
 
     def post_deserialize(self, value, attr, obj, **kwargs):
         if not self.min_length and value == "":
@@ -577,7 +599,6 @@ class Dict(Fields, fields.Dict):
     def __init__(self, allow_empty=False, post_validate=None, *args, **kwargs):
         self.allow_empty = allow_empty
         self.post_validate = post_validate
-        kwargs.setdefault("error_messages", default_error_messages())
         super(Dict, self).__init__(*args, **kwargs)
 
     def main_deserialize(self, value, attr, data, **kwargs):
@@ -592,9 +613,10 @@ mm_plugin.map_to_openapi_type(Dict, "object", None)
 
 
 class JsonSchema(Dict):
+    default_error_messages = {"validator_failed": error_msg(FIELD_JSONSCHEMA)}
+
     def __init__(self, *args, **kwargs):
         super(JsonSchema, self).__init__(*args, **kwargs)
-        self.error_messages["validator_failed"] = error_msg(FIELD_JSONSCHEMA)
 
     def post_deserialize(self, value, attr, obj, **kwargs):
         try:
@@ -609,9 +631,10 @@ class JsonSchema(Dict):
 
 
 class Username(String):
+    default_error_messages = {"validator_failed": error_msg(FIELD_USERNAME)}
+
     def __init__(self, *args, **kwargs):
         super(Username, self).__init__(lower=True, *args, **kwargs)
-        self.error_messages["validator_failed"] = error_msg(FIELD_USERNAME)
 
     def post_deserialize(self, value, attr, obj, **kwargs):
         output, output_type = validate_username(value, self.min_length)
@@ -643,7 +666,6 @@ class List(Fields, fields.List):
         self.post_validate = post_validate
         self.duplicate_callable = duplicate_callable
         self.remove_duplicates = remove_duplicates
-        kwargs.setdefault("error_messages", default_error_messages())
         super(List, self).__init__(cls_or_instance, **kwargs)
 
     def _validate(self, value):
@@ -692,7 +714,6 @@ mm_plugin.map_to_openapi_type(Set, "array", None)
 
 class Boolean(fields.Boolean):
     def __init__(self, *args, **kwargs):
-        kwargs.setdefault("error_messages", default_error_messages())
         super(Boolean, self).__init__(*args, **kwargs)
 
 
@@ -706,7 +727,6 @@ class Integer(Fields, fields.Integer):
         self.min_length = min_length
         self.max_length = max_length
         self.post_validate = post_validate
-        kwargs.setdefault("error_messages", default_error_messages())
         super(Integer, self).__init__(*args, **kwargs)
 
     def main_deserialize(self, value, attr, obj, **kwargs):
@@ -723,9 +743,10 @@ mm_plugin.map_to_openapi_type(Integer, "integer", "int32")
 
 
 class FutureTimestamp(Integer):
+    default_error_messages = {"validator_failed": error_msg(FIELD_FUTURE_DATETIME)}
+
     def __init__(self, *args, **kwargs):
         super(FutureTimestamp, self).__init__(*args, **kwargs)
-        self.error_messages["validator_failed"] = error_msg(FIELD_FUTURE_DATETIME)
 
     def post_deserialize(self, value, attr, obj, **kwargs):
         present = int(datetime.now(timezone.utc).timestamp())
@@ -739,7 +760,6 @@ mm_plugin.map_to_openapi_type(FutureTimestamp, "integer", "int32")
 
 class Float(fields.Float):
     def __init__(self, *args, **kwargs):
-        kwargs.setdefault("error_messages", default_error_messages())
         super(Float, self).__init__(*args, **kwargs)
 
 
@@ -750,7 +770,6 @@ class Nested(Fields, fields.Nested):
     def __init__(self, *args, post_validate=None, allow_empty=False, **kwargs):
         self.post_validate = post_validate
         self.allow_empty = allow_empty
-        kwargs.setdefault("error_messages", default_error_messages())
         super(Nested, self).__init__(*args, **kwargs)
 
     def main_deserialize(self, value, attr, obj, **kwargs):
@@ -760,14 +779,16 @@ class Nested(Fields, fields.Nested):
 
 
 class OneOf(validate.OneOf):
+    default_error_messages = {"validator_failed": error_msg(FIELD_VALIDATOR_FAILED)}
+
     def __init__(self, *args, **kwargs):
-        kwargs.setdefault("error", error_msg(FIELD_VALIDATOR_FAILED))
         super(OneOf, self).__init__(*args, **kwargs)
 
 
 class ContainsOnly(validate.ContainsOnly):
+    default_error_messages = {"validator_failed": error_msg(FIELD_VALIDATOR_FAILED)}
+
     def __init__(self, *args, **kwargs):
-        kwargs.setdefault("error", error_msg(FIELD_VALIDATOR_FAILED))
         super(ContainsOnly, self).__init__(*args, **kwargs)
 
 
@@ -787,7 +808,6 @@ class Function(fields.Field):
         self.deserialize_func = deserialize
         self.input_type = input_type or str
         self.allow_empty = allow_empty
-        kwargs.setdefault("error_messages", default_error_messages())
         super(Function, self).__init__(*args, **kwargs)
 
     def _deserialize(self, value, attr, obj, **kwargs):
