@@ -117,6 +117,12 @@ FIELD_USERNAME = (
 )
 
 
+def error_msg(field):
+    if os.environ.get("MMALLOW_ERROR_EXPAND", "true") == "true":
+        return field[1]
+    return field[0]
+
+
 def default_error_messages():
     return dict(
         {
@@ -156,12 +162,6 @@ def is_valid_friendly_input(s, allowed_chars=None) -> bool:
         else:
             return False
     return True
-
-
-def error_msg(field):
-    if os.environ.get("MMALLOW_ERROR_EXPAND", "true") == "true":
-        return field[1]
-    return field[0]
 
 
 def validate_email(value, min_length=None):
